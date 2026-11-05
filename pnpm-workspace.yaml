@@ -1,0 +1,35 @@
+packages:
+  - packages/*
+
+# 开发宿主版本只在这里钉一次。宿主包（@deepseek-ai/*）是本仓编译期的类型来源、
+# 运行期由 DSH 提供：插件包用 peerDependencies 声明契约，用 devDependencies +
+# catalog 取开发用的那一份。两者必须同版。
+#
+# 本仓只有两个包，只需要它们用到的宿主，不搬运 dsh-fft-bundle 的整段闭包；
+# 新增宿主 peer 时按报错在这里补一行。
+autoInstallPeers: true
+catalog:
+  '@deepseek-ai/cordis': 4.0.4
+  '@deepseek-ai/dsh-api-remotes': 0.2.1-rc.2
+  '@deepseek-ai/dsh-client-ui-settings': 0.2.1-rc.2
+  '@deepseek-ai/dsh-client-ui-slots': 0.2.1-rc.2
+  '@deepseek-ai/dsh-credentials': 0.2.1-rc.2
+  '@deepseek-ai/dsh-llm': 0.2.1-rc.2
+  '@deepseek-ai/dsh-tools': 0.2.1-rc.2
+  '@deepseek-ai/schemastery': 3.18.5
+overrides:
+  # 与 catalog 同版：autoInstallPeers 装进来的传递 peer 也钉到这一版。
+  '@deepseek-ai/cordis': 4.0.4
+  '@deepseek-ai/cordis-plugin-group': 1.0.5
+  '@deepseek-ai/cordis-plugin-include': 1.0.10
+  '@deepseek-ai/cordis-plugin-loader': 1.0.6
+  '@deepseek-ai/cosmokit': 1.8.6
+  '@deepseek-ai/schemastery': 3.18.5
+  '@deepseek-ai/dsh-api-remotes': 0.2.1-rc.2
+  '@deepseek-ai/dsh-client-locale': 0.2.1-rc.2
+  '@deepseek-ai/dsh-client-ui-primitives': 0.2.1-rc.2
+  '@deepseek-ai/dsh-client-ui-settings': 0.2.1-rc.2
+  '@deepseek-ai/dsh-client-ui-slots': 0.2.1-rc.2
+  '@deepseek-ai/dsh-credentials': 0.2.1-rc.2
+  '@deepseek-ai/dsh-llm': 0.2.1-rc.2
+  '@deepseek-ai/dsh-tools': 0.2.1-rc.2

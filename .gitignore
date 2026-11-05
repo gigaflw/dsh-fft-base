@@ -1,0 +1,13 @@
+node_modules/
+.pnpm-store/
+tmp/
+dsh_tmp/
+.DS_Store
+# 本地凭据，禁止入库
+.env
+# Python bytecode from running packaged skill scripts in place
+__pycache__/
+*.pyc
+.worktrees/
+# 构建产物：发布时由 prepare 构建，不入库（与 paper-trading 一致）
+lib/
