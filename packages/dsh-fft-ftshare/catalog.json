@@ -3,7 +3,7 @@
     {
       "name": "ft_v1_abnormal_trading_details",
       "title": "龙虎榜明细",
-      "description": "查询龙虎榜明细（异动成交详情），按交易日返回当日上榜标的明细：含标的涨跌幅、收盘价、成交额，以及买入额/卖出额前 5 名营业部明细。传入 `date` 时返回指定交易日的数据，不传时返回最新数据。返回数组，并补充标的名称。提示：`date` 格式 YYYYMMDD；不传返回最新快照；金额字段单位为元。支持分页；`page/page_size` 可省略，上游缺省 `1/200`，`page_size` 超过 500 按 500 处理。",
+      "description": "查询龙虎榜明细，按交易日返回当日上榜标的涨跌幅、收盘价、成交额、上榜原因，以及买入额/卖出额前 5 名营业部明细；同一标的在同一交易日可能因不同上榜原因返回多条记录。传入 `date` 时返回指定交易日的数据，不传时返回最新数据。提示：`date` 格式 YYYYMMDD；不传返回最新快照；金额字段单位为元；`top_buyers`/`top_sellers` 为买入额/卖出额排名前五的营业部，源数据缺少名次时不补空位。支持分页；`page/page_size` 可省略，缺省 `1/200`，`page_size` 超过 500 按 500 处理。",
       "inputSchema": {
         "type": "object",
         "properties": {
@@ -30,7 +30,7 @@
     {
       "name": "ft_v1_abnormal_trading_overview",
       "title": "龙虎榜总览",
-      "description": "查询龙虎榜总览（异动成交概览），按交易日返回当日上榜标的的总览信息：仅含标的代码与涨跌幅，按交易所分桶（上交所 xshg / 深交所 xshe / 北交所 bjse）。传入 `date` 时返回指定交易日的数据，不传时返回最新数据。返回单对象，并补充标的名称。提示：`date` 格式 YYYYMMDD；不传返回最新快照。支持分页；`page/page_size` 可省略，上游缺省 `1/200`，`page_size` 超过 500 按 500 处理。",
+      "description": "查询龙虎榜总览，按交易日返回当日上榜标的的代码、名称、涨跌幅、收盘价、成交额和上榜原因；同一标的在同一交易日可能因不同上榜原因返回多条记录，记录按上交所、深交所、北交所顺序展平为分页列表。传入 `date` 时返回指定交易日的数据，不传时返回最新数据。提示：`date` 格式 YYYYMMDD；不传返回最新快照；不含买卖营业部明细。支持分页；`page/page_size` 可省略，缺省 `1/200`，`page_size` 超过 500 按 500 处理。",
       "inputSchema": {
         "type": "object",
         "properties": {
@@ -57,12 +57,12 @@
     {
       "name": "ft_v1_block_trades",
       "title": "大宗交易",
-      "description": "查询大宗交易明细，按交易日返回当日大宗成交记录：含标的、成交价、成交量、收盘价、溢价率，以及买方/卖方营业部名称。传入 `date` 时返回指定交易日的数据，不传时返回最新数据。返回数组，并补充标的名称。提示：`date` 格式 YYYYMMDD；不传返回最新快照；价格字段（close/price）单位为元，volume 单位为股。支持分页；`page/page_size` 可省略，上游缺省 `1/200`，`page_size` 超过 500 按 500 处理。",
+      "description": "查询大宗交易明细，按交易日返回当日大宗成交记录：含标的、成交价、成交量、收盘价、溢价率，以及买方/卖方营业部名称。传入 `date` 时返回指定交易日的数据，不传时返回最新数据。返回数组，并补充标的名称。提示：`date` 格式 YYYYMMDD；不传返回最新快照；价格字段（close/price）单位为元，volume 单位为股。支持分页；`page/page_size` 可省略，缺省 `1/200`，`page_size` 超过 500 按 500 处理。",
       "inputSchema": {
         "type": "object",
         "properties": {
           "date": {
-            "description": "查询日期；格式由上游接口校验，不传则使用最新快照",
+            "description": "查询日期，格式 `YYYYMMDD`（其他格式返回 400）；不传则使用最新快照",
             "maxLength": 4096,
             "type": "string"
           },
@@ -199,7 +199,7 @@
           },
           "page_size": {
             "default": 100,
-            "description": "每页条数；缺省 100，1 到 1000，超出范围上游返回参数错误",
+            "description": "每页条数；缺省 100，1 到 1000，超出范围返回参数错误",
             "maximum": 1000,
             "minimum": 1,
             "type": "integer"
@@ -449,7 +449,7 @@
     {
       "name": "ft_v1_corporate_contract_by_symbol",
       "title": "重大合同按标的",
-      "description": "按证券代码分页查询 A 股上市公司披露的重大合同，返回合同双方、合同类型、合同名称、合同金额、占上年营收比例、签约日期和披露日期等信息。提示：`symbol` 支持纯代码、短后缀或长后缀，MCP 自动规范化；支持 `page` 和 `page_size`。",
+      "description": "按证券代码分页查询 A 股上市公司披露的重大合同，返回合同双方、合同类型、合同名称、合同金额、占上年营收比例、签约日期和披露日期等信息。提示：`symbol` 支持 6 位裸码或带 .SH/.SZ/.BJ/.XSHG/.XSHE/.BJSE 后缀（无法识别的代码返回 400）；支持 `page` 和 `page_size`。",
       "inputSchema": {
         "type": "object",
         "properties": {
@@ -464,11 +464,9 @@
             "type": "integer"
           },
           "symbol": {
-            "description": "A 股股票代码，支持 6 位纯代码、.SH/.SZ/.BJ 短后缀或 .XSHG/.XSHE/.BJSE 长后缀；MCP 自动规范化",
+            "description": "A 股股票代码，支持裸码（如 600519）或带 .SH/.SZ/.BJ/.XSHG/.XSHE/.BJSE 后缀；无法识别的代码返回 400",
             "examples": [
-              "000001",
-              "000001.SZ",
-              "000001.XSHE"
+              "000001"
             ],
             "maxLength": 4096,
             "type": "string"
@@ -532,7 +530,7 @@
         "type": "object",
         "properties": {
           "since": {
-            "description": "起始日期；格式由上游接口校验",
+            "description": "起始日期，格式 `YYYYMMDD`（其他格式返回 400）",
             "maxLength": 4096,
             "type": "string"
           },
@@ -541,7 +539,7 @@
             "type": "string"
           },
           "until": {
-            "description": "结束日期；格式由上游接口校验",
+            "description": "截止日期，格式 `YYYYMMDD`（其他格式返回 400）",
             "maxLength": 4096,
             "type": "string"
           }
@@ -637,7 +635,7 @@
     {
       "name": "ft_v1_eastmoney_board_constituents",
       "title": "东方财富板块成分股",
-      "description": "按板块代码查询东方财富板块的成分股列表，每条记录含板块代码、板块名称、板块类型、行业层级、股票代码（6 位，不含交易所后缀）和股票名称。覆盖行业 / 概念 / 地域三类板块，当前在线 1031 个（概念 504 / 行业 496 / 地域 31）；最大板块（如融资融券 3876 只）需翻页取全。成分股进出记录自 20260929 起采集、无历史回填；查询日早于该板块首次采集日时按首次采集日当天的在籍名单返回，不返回空。提示：`board_code` 必填，取东方财富板块代码（BK 开头，如 BK0475 银行Ⅱ、BK0490 军工、BK0153 广东板块），代码不存在时返回 400；不传 `date` 返回当前仍在板块内的成分股，传 `date` 返回截至该日的成分股（含此后已退出的）；返回的 `board_type` 取值为 industry 行业 / concept 概念 / regional 地域（地域拼写是 regional 不是 region）；`level` 仅行业板块有值（1 一级 / 2 二级 / 3 三级），概念、地域板块为 null；结果按 `stock_code` 升序。支持分页；`page/page_size` 可省略，上游缺省 `1/200`，`page` 0 按 1 处理，`page_size` 0 按 1 处理、超过 500 按 500 处理。",
+      "description": "按板块代码查询东方财富板块的成分股列表，每条记录含板块代码、板块名称、板块类型、行业层级、股票代码（6 位，不含交易所后缀）和股票名称。覆盖行业 / 概念 / 地域三类板块，当前在线 1031 个（概念 504 / 行业 496 / 地域 31）；最大板块（如融资融券 3876 只）需翻页取全。成分股进出记录自 20260929 起采集、无历史回填；查询日早于该板块首次采集日时按首次采集日当天的在籍名单返回，不返回空。提示：`board_code` 必填，取东方财富板块代码（BK 开头，如 BK0475 银行Ⅱ、BK0490 军工、BK0153 广东板块），代码不存在时返回 400；不传 `date` 返回当前仍在板块内的成分股，传 `date` 返回截至该日的成分股（含此后已退出的）；返回的 `board_type` 取值为 industry 行业 / concept 概念 / regional 地域（地域拼写是 regional 不是 region）；`level` 仅行业板块有值（1 一级 / 2 二级 / 3 三级），概念、地域板块为 null；结果按 `stock_code` 升序。支持分页；`page/page_size` 可省略，缺省 `1/200`，`page` 0 按 1 处理，`page_size` 0 按 1 处理、超过 500 按 500 处理。",
       "inputSchema": {
         "type": "object",
         "properties": {
@@ -671,7 +669,7 @@
     {
       "name": "ft_v1_eastmoney_board_daily_ohlc",
       "title": "东方财富板块日线OHLC",
-      "description": "查询单个东方财富概念板块的历史日线 OHLC，返回开盘、收盘、最高、最低、成交量、成交额、振幅、涨跌幅和换手率等指标。提示：`board_code` 必填；`start_date` 和 `end_date` 可选，支持 YYYY-MM-DD 或 YYYYMMDD，同时传入时跨度不能超过 3 天；支持分页。",
+      "description": "查询单个东方财富概念板块的历史日线 OHLC，返回开盘、收盘、最高、最低、成交量、成交额、振幅、涨跌幅和换手率等指标。提示：`board_code` 必填；`start_date` 和 `end_date` 可选，格式 `YYYYMMDD`（其他格式返回 400），同时传入时跨度不能超过 3 天；支持分页。",
       "inputSchema": {
         "type": "object",
         "properties": {
@@ -681,7 +679,7 @@
             "type": "string"
           },
           "end_date": {
-            "description": "截止日期（含）；不能早于 start_date",
+            "description": "截止日期（含），格式 `YYYYMMDD`；不能早于 start_date",
             "maxLength": 4096,
             "type": "string"
           },
@@ -696,7 +694,7 @@
             "type": "integer"
           },
           "start_date": {
-            "description": "起始日期（含）；与 end_date 的跨度不能超过 3 天",
+            "description": "起始日期（含），格式 `YYYYMMDD`；与 end_date 的跨度不能超过 3 天",
             "maxLength": 4096,
             "type": "string"
           }
@@ -721,12 +719,12 @@
     {
       "name": "ft_v1_eastmoney_dapan_flow",
       "title": "东方财富大盘资金流",
-      "description": "查询东方财富沪深市场日资金流，返回主力、超大单、大单、中单和小单的净流入及占比，以及上证、深证收盘点位和涨跌幅。提示：`trade_date` 与 `start_date`/`end_date` 互斥；资金净流入以元为单位。",
+      "description": "查询东方财富沪深市场日资金流，返回主力、超大单、大单、中单和小单的净流入及占比，以及上证、深证收盘点位和涨跌幅。提示：`trade_date` 与 `start_date`/`end_date` 同时提供时按交集过滤，区间可只提供单端；资金净流入以元为单位。",
       "inputSchema": {
         "type": "object",
         "properties": {
           "end_date": {
-            "description": "区间结束日 YYYYMMDD；需与 start_date 同时提供",
+            "description": "区间结束日 YYYYMMDD；可只提供单端",
             "maxLength": 4096,
             "type": "string"
           },
@@ -738,18 +736,18 @@
           },
           "page_size": {
             "default": 50,
-            "description": "每页条数；缺省 50，1 到 500，超出范围上游返回参数错误",
+            "description": "每页条数；缺省 50，1 到 500，超出范围返回参数错误",
             "maximum": 500,
             "minimum": 1,
             "type": "integer"
           },
           "start_date": {
-            "description": "区间起始日 YYYYMMDD；需与 end_date 同时提供",
+            "description": "区间起始日 YYYYMMDD；可只提供单端",
             "maxLength": 4096,
             "type": "string"
           },
           "trade_date": {
-            "description": "交易日 YYYYMMDD；与 start_date/end_date 互斥",
+            "description": "交易日 YYYYMMDD；与区间条件同时提供时按交集过滤",
             "maxLength": 4096,
             "type": "string"
           }
@@ -766,7 +764,7 @@
         "type": "object",
         "properties": {
           "end_date": {
-            "description": "区间结束日 YYYYMMDD；需与 start_date 同时提供",
+            "description": "区间结束日 YYYYMMDD；可只提供单端",
             "maxLength": 4096,
             "type": "string"
           },
@@ -778,13 +776,13 @@
           },
           "page_size": {
             "default": 100,
-            "description": "每页条数；缺省 100，1 到 1000，超出范围上游返回参数错误",
+            "description": "每页条数；缺省 100，1 到 1000，超出范围返回参数错误",
             "maximum": 1000,
             "minimum": 1,
             "type": "integer"
           },
           "start_date": {
-            "description": "区间起始日 YYYYMMDD；需与 end_date 同时提供",
+            "description": "区间起始日 YYYYMMDD；可只提供单端",
             "maxLength": 4096,
             "type": "string"
           },
@@ -794,7 +792,7 @@
             "type": "string"
           },
           "trade_date": {
-            "description": "交易日 YYYYMMDD；与 start_date/end_date 互斥",
+            "description": "交易日 YYYYMMDD；与区间条件同时提供时按交集过滤",
             "maxLength": 4096,
             "type": "string"
           }
@@ -806,7 +804,7 @@
     {
       "name": "ft_v1_eastmoney_futures_position",
       "title": "东方财富期货持仓",
-      "description": "获取东方财富期货每日成交持仓排行榜数据，按合约/会员维度给出成交量、多头、空头、净多头、净空头的排名与持仓量及变化，含多头增/减仓、空头增/减仓排名，以及结算价、多头/空头平均价。数据来源：东方财富。支持按交易所、品种、合约、会员、交易日或日期区间过滤。提示：每个合约每个交易日下会有多会员多行，总量较大，建议按合约+日期精准过滤；`trade_date` 与 `start_date`/`end_date` 互斥。",
+      "description": "获取东方财富期货每日成交持仓排行榜数据，按合约/会员维度给出成交量、多头、空头、净多头、净空头的排名与持仓量及变化，含多头增/减仓、空头增/减仓排名，以及结算价、多头/空头平均价。数据来源：东方财富。支持按交易所、品种、合约、会员、交易日或日期区间过滤。提示：每个合约每个交易日下会有多会员多行，总量较大，建议按合约+日期精准过滤；`trade_date` 与 `start_date`/`end_date` 同时提供时按交集过滤，区间可只提供单端。",
       "inputSchema": {
         "type": "object",
         "properties": {
@@ -816,7 +814,7 @@
             "type": "string"
           },
           "end_date": {
-            "description": "区间结束日 YYYYMMDD；需与 start_date 同时提供",
+            "description": "区间结束日 YYYYMMDD；可只提供单端",
             "maxLength": 4096,
             "type": "string"
           },
@@ -838,18 +836,18 @@
           },
           "page_size": {
             "default": 50,
-            "description": "每页条数；缺省 50，1 到 500，超出范围上游返回参数错误",
+            "description": "每页条数；缺省 50，1 到 500，超出范围返回参数错误",
             "maximum": 500,
             "minimum": 1,
             "type": "integer"
           },
           "start_date": {
-            "description": "区间起始日 YYYYMMDD；需与 end_date 同时提供",
+            "description": "区间起始日 YYYYMMDD；可只提供单端",
             "maxLength": 4096,
             "type": "string"
           },
           "trade_date": {
-            "description": "交易日 YYYYMMDD；与 start_date/end_date 互斥",
+            "description": "交易日 YYYYMMDD；与区间条件同时提供时按交集过滤",
             "maxLength": 4096,
             "type": "string"
           },
@@ -925,7 +923,7 @@
           },
           "page_size": {
             "default": 50,
-            "description": "每页条数；缺省 50，1 到 500，超出范围上游返回参数错误",
+            "description": "每页条数；缺省 50，1 到 500，超出范围返回参数错误",
             "maximum": 500,
             "minimum": 1,
             "type": "integer"
@@ -975,7 +973,7 @@
     {
       "name": "ft_v1_eastmoney_sector_flow",
       "title": "东方财富板块资金流",
-      "description": "获取东方财富板块（行业/概念/地域）日资金流数据，含主力/超大单/大单/中单/小单四档净流入及净占比。数据来源：东方财富。支持按板块代码（BK0488 等）、板块类型（industry/concept/regional）、行业层级、交易日或日期区间过滤，返回字段为 `board_code`/`board_name`/`board_type`/`board_level`。提示：`board_code` 为东财板块代码，以 BK 开头（如 BK0488）；`board_level` 行业层级 1=一级、2=二级、3=三级，概念/地域板块为 0；`trade_date` 与 `start_date`/`end_date` 互斥。",
+      "description": "获取东方财富板块（行业/概念/地域）日资金流数据，含主力/超大单/大单/中单/小单四档净流入及净占比。数据来源：东方财富。支持按板块代码（BK0488 等）、板块类型（industry/concept/regional）、行业层级、交易日或日期区间过滤，返回字段为 `board_code`/`board_name`/`board_type`/`board_level`。提示：`board_code` 为东财板块代码，以 BK 开头（如 BK0488）；`board_level` 行业层级 1=一级、2=二级、3=三级，概念/地域板块为 0；`trade_date` 与 `start_date`/`end_date` 同时提供时按交集过滤，区间可只提供单端。",
       "inputSchema": {
         "type": "object",
         "properties": {
@@ -996,7 +994,7 @@
             "type": "string"
           },
           "end_date": {
-            "description": "区间结束日 YYYYMMDD；需与 start_date 同时提供",
+            "description": "区间结束日 YYYYMMDD；可只提供单端",
             "maxLength": 4096,
             "type": "string"
           },
@@ -1008,18 +1006,18 @@
           },
           "page_size": {
             "default": 50,
-            "description": "每页条数；缺省 50，1 到 500，超出范围上游返回参数错误",
+            "description": "每页条数；缺省 50，1 到 500，超出范围返回参数错误",
             "maximum": 500,
             "minimum": 1,
             "type": "integer"
           },
           "start_date": {
-            "description": "区间起始日 YYYYMMDD；需与 end_date 同时提供",
+            "description": "区间起始日 YYYYMMDD；可只提供单端",
             "maxLength": 4096,
             "type": "string"
           },
           "trade_date": {
-            "description": "交易日 YYYYMMDD；与 start_date/end_date 互斥",
+            "description": "交易日 YYYYMMDD；与区间条件同时提供时按交集过滤",
             "maxLength": 4096,
             "type": "string"
           }
@@ -1031,15 +1029,14 @@
     {
       "name": "ft_v1_eastmoney_stock_flow",
       "title": "东方财富个股资金流",
-      "description": "获取东方财富个股日资金流数据，含主力、超大单、大单、中单和小单净流入及净占比，以及收盘价与涨跌幅。可按股票代码、单日或日期区间过滤；`trade_date` 与 `start_date`/`end_date` 互斥，区间起止日期必须同时提供。股票代码由上游按 A 股代码规则解析，日期格式由上游校验。",
+      "description": "获取东方财富个股日资金流数据，含主力、超大单、大单、中单和小单净流入及净占比，以及收盘价与涨跌幅。可按股票代码、单日或日期区间过滤；`trade_date` 与 `start_date`/`end_date` 同时提供时按交集过滤，区间可只提供单端。股票代码支持 6 位裸码或带 `.SH/.SZ/.BJ/.XSHG/.XSHE/.BJSE` 后缀（无法识别的代码返回 400）；日期格式 `YYYYMMDD`（其他格式返回 400）。",
       "inputSchema": {
         "type": "object",
         "properties": {
           "end_date": {
-            "description": "区间结束日；格式由上游校验",
+            "description": "区间结束日，格式 `YYYYMMDD`（其他格式返回 400）",
             "examples": [
-              "20260812",
-              "2026-08-12"
+              "20260812"
             ],
             "maxLength": 4096,
             "type": "string"
@@ -1052,131 +1049,49 @@
           },
           "page_size": {
             "default": 50,
-            "description": "每页条数；缺省 50，1 到 500，超出范围上游返回参数错误",
+            "description": "每页条数；缺省 50，1 到 500，超出范围返回参数错误",
             "maximum": 500,
             "minimum": 1,
             "type": "integer"
           },
           "start_date": {
-            "description": "区间起始日；格式由上游校验",
+            "description": "区间起始日，格式 `YYYYMMDD`（其他格式返回 400）",
             "examples": [
-              "20260812",
-              "2026-08-12"
+              "20260812"
             ],
             "maxLength": 4096,
             "type": "string"
           },
           "symbol": {
-            "description": "A 股股票代码；支持上游可解析的纯代码或交易所后缀格式",
+            "description": "A 股股票代码，支持裸码（如 600519）或带 .SH/.SZ/.BJ/.XSHG/.XSHE/.BJSE 后缀；无法识别的代码返回 400",
             "examples": [
-              "000001",
-              "000001.SZ",
-              "000001.XSHE"
+              "000001"
             ],
             "maxLength": 4096,
             "type": "string"
           },
           "trade_date": {
-            "description": "交易日；格式由上游校验",
+            "description": "交易日，格式 `YYYYMMDD`（其他格式返回 400）",
             "examples": [
-              "20260812",
-              "2026-08-12"
+              "20260812"
             ],
             "maxLength": 4096,
             "type": "string"
           }
         },
         "required": [],
-        "additionalProperties": false,
-        "oneOf": [
-          {
-            "not": {
-              "anyOf": [
-                {
-                  "properties": {
-                    "trade_date": {}
-                  },
-                  "required": [
-                    "trade_date"
-                  ]
-                },
-                {
-                  "properties": {
-                    "start_date": {}
-                  },
-                  "required": [
-                    "start_date"
-                  ]
-                },
-                {
-                  "properties": {
-                    "end_date": {}
-                  },
-                  "required": [
-                    "end_date"
-                  ]
-                }
-              ]
-            }
-          },
-          {
-            "not": {
-              "anyOf": [
-                {
-                  "properties": {
-                    "start_date": {}
-                  },
-                  "required": [
-                    "start_date"
-                  ]
-                },
-                {
-                  "properties": {
-                    "end_date": {}
-                  },
-                  "required": [
-                    "end_date"
-                  ]
-                }
-              ]
-            },
-            "properties": {
-              "trade_date": {}
-            },
-            "required": [
-              "trade_date"
-            ]
-          },
-          {
-            "not": {
-              "properties": {
-                "trade_date": {}
-              },
-              "required": [
-                "trade_date"
-              ]
-            },
-            "properties": {
-              "end_date": {},
-              "start_date": {}
-            },
-            "required": [
-              "start_date",
-              "end_date"
-            ]
-          }
-        ]
+        "additionalProperties": false
       }
     },
     {
       "name": "ft_v1_eastmoney_stock_valuation",
       "title": "东方财富个股估值",
-      "description": "查询东方财富 A 股个股日估值，返回市盈率、市净率、市现率、市销率、PEG、市值和股本等指标。提示：`symbol` 支持纯代码、短后缀或长后缀，MCP 自动规范化；必须提供 `symbol`、`trade_date` 或 `start_date + end_date` 其中一种过滤条件；估值字段可能为空。",
+      "description": "查询东方财富 A 股个股日估值，返回市盈率、市净率、市现率、市销率、PEG、市值和股本等指标。提示：`symbol` 需传 6 位纯代码（如 600519），带交易所后缀查不到数据；必须提供 `symbol`、`trade_date` 或 `start_date + end_date` 其中一种过滤条件；估值字段可能为空。",
       "inputSchema": {
         "type": "object",
         "properties": {
           "end_date": {
-            "description": "区间结束日 YYYYMMDD；需与 start_date 同时提供",
+            "description": "区间结束日 YYYYMMDD；可只提供单端",
             "maxLength": 4096,
             "type": "string"
           },
@@ -1188,28 +1103,26 @@
           },
           "page_size": {
             "default": 50,
-            "description": "每页条数；缺省 50，1 到 200，超出范围上游返回参数错误",
+            "description": "每页条数；缺省 50，1 到 200，超出范围返回参数错误",
             "maximum": 200,
             "minimum": 1,
             "type": "integer"
           },
           "start_date": {
-            "description": "区间起始日 YYYYMMDD；需与 end_date 同时提供",
+            "description": "区间起始日 YYYYMMDD；可只提供单端",
             "maxLength": 4096,
             "type": "string"
           },
           "symbol": {
-            "description": "A 股股票代码，支持 6 位纯代码、.SH/.SZ/.BJ 短后缀或 .XSHG/.XSHE/.BJSE 长后缀；MCP 自动规范化",
+            "description": "A 股股票代码，6 位纯代码（如 600519）；带交易所后缀查不到数据",
             "examples": [
-              "000001",
-              "000001.SZ",
-              "000001.XSHE"
+              "000001"
             ],
             "maxLength": 4096,
             "type": "string"
           },
           "trade_date": {
-            "description": "交易日 YYYYMMDD；与 start_date/end_date 互斥",
+            "description": "交易日 YYYYMMDD；与 start_date/end_date 同时提供时按交集过滤",
             "maxLength": 4096,
             "type": "string"
           }
@@ -1221,7 +1134,7 @@
     {
       "name": "ft_v1_eastmoney_us_stock_daily_ohlc",
       "title": "东方财富美股日OHLC",
-      "description": "查询东方财富美股日 K 线，返回开盘、收盘、最高、最低、成交量和成交额等指标。支持四种模式：按股票和日期查询历史区间、仅按股票查询最新记录、仅按日期查询全市场历史切片、无筛选查询各股票最新记录。日期区间跨度不能超过 3 天；分页参数由上游归一化。",
+      "description": "查询东方财富美股日 K 线，返回开盘、收盘、最高、最低、成交量和成交额等指标。支持四种模式：按股票和日期查询历史区间、仅按股票查询最新记录、仅按日期查询全市场历史切片、无筛选查询各股票最新记录。日期区间跨度不能超过 3 天；分页参数 0 按 1 处理、超过上限按上限处理。",
       "inputSchema": {
         "type": "object",
         "properties": {
@@ -1283,7 +1196,7 @@
     {
       "name": "ft_v1_economic_china_cpi",
       "title": "CPI",
-      "description": "查询中国居民消费价格指数（CPI）月度汇总计算结果。按月份返回全国（含累计同比）、城市、农村三档 CPI 同比/环比/当月值。元素为 `ComputedCpi`。提示：月份字段 `month` 已格式化为中文「YYYY年MM月份」；数值字段单位为百分比（%），部分月份字段缺失时为 null。支持分页；`page/page_size` 可省略，上游缺省 `1/200`，`page_size` 超过 500 按 500 处理。",
+      "description": "查询中国居民消费价格指数（CPI）月度汇总计算结果。按月份返回全国（含累计同比）、城市、农村三档 CPI 同比/环比/当月值。元素为 `ComputedCpi`。提示：月份字段 `month` 已格式化为中文「YYYY年MM月份」；数值字段单位为百分比（%），部分月份字段缺失时为 null。支持分页；`page/page_size` 可省略，缺省 `1/200`，`page_size` 超过 500 按 500 处理。",
       "inputSchema": {
         "type": "object",
         "properties": {
@@ -1305,7 +1218,7 @@
     {
       "name": "ft_v1_economic_china_credit_loans",
       "title": "社融信贷",
-      "description": "查询中国信贷数据（月度汇总计算结果。按月份返回新增信贷当月值、同比、环比、当年累计及累计同比。数据按月聚合。提示：`month` 格式化为「YYYY年MM月份」；金额字段单位见 `unit`（通常为亿元），币种见 `currency`。支持分页；`page/page_size` 可省略，上游缺省 `1/200`，`page_size` 超过 500 按 500 处理。",
+      "description": "查询中国信贷数据（月度汇总计算结果。按月份返回新增信贷当月值、同比、环比、当年累计及累计同比。数据按月聚合。提示：`month` 格式化为「YYYY年MM月份」；金额字段单位见 `unit`（通常为亿元），币种见 `currency`。支持分页；`page/page_size` 可省略，缺省 `1/200`，`page_size` 超过 500 按 500 处理。",
       "inputSchema": {
         "type": "object",
         "properties": {
@@ -1471,7 +1384,7 @@
     {
       "name": "ft_v1_economic_china_money_supply",
       "title": "货币供应",
-      "description": "查询中国货币供应量（M0/M1/M2）月度汇总计算结果。按月份返回 M2、M1、M0 各自的当月数量、同比、环比。数据按月聚合。提示：`month` 格式化为「YYYY年MM月份」；数量单位见 `unit`（通常为万亿元），币种见 `currency`。支持分页；`page/page_size` 可省略，上游缺省 `1/200`，`page_size` 超过 500 按 500 处理。",
+      "description": "查询中国货币供应量（M0/M1/M2）月度汇总计算结果。按月份返回 M2、M1、M0 各自的当月数量、同比、环比。数据按月聚合。提示：`month` 格式化为「YYYY年MM月份」；数量单位见 `unit`（通常为万亿元），币种见 `currency`。支持分页；`page/page_size` 可省略，缺省 `1/200`，`page_size` 超过 500 按 500 处理。",
       "inputSchema": {
         "type": "object",
         "properties": {
@@ -1493,7 +1406,7 @@
     {
       "name": "ft_v1_economic_china_pmi",
       "title": "PMI",
-      "description": "查询中国采购经理指数（PMI）月度汇总计算结果，覆盖制造业与非制造业。按月份返回制造业/非制造业 PMI 当月值、同比、环比。数据按月聚合。提示：`month` 格式化为「YYYY年MM月份」；PMI 数值单位为百分比（%），缺失为 null。支持分页；`page/page_size` 可省略，上游缺省 `1/200`，`page_size` 超过 500 按 500 处理。",
+      "description": "查询中国采购经理指数（PMI）月度汇总计算结果，覆盖制造业与非制造业。按月份返回制造业/非制造业 PMI 当月值、同比、环比。数据按月聚合。提示：`month` 格式化为「YYYY年MM月份」；PMI 数值单位为百分比（%），缺失为 null。支持分页；`page/page_size` 可省略，缺省 `1/200`，`page_size` 超过 500 按 500 处理。",
       "inputSchema": {
         "type": "object",
         "properties": {
@@ -1732,7 +1645,7 @@
             "type": "integer"
           },
           "symbol": {
-            "description": "ETF 代码；格式由上游标的解析器校验",
+            "description": "ETF 代码；支持不带后缀的六位代码（如 `510300`）或带 `.SH/.SZ`、`.XSHG/.XSHE` 市场后缀；无法识别的代码返回 400",
             "maxLength": 4096,
             "type": "string"
           },
@@ -1780,7 +1693,7 @@
         "type": "object",
         "properties": {
           "end_date": {
-            "description": "结束日期；格式由上游接口校验",
+            "description": "结束日期，格式 `YYYYMMDD`（其他格式返回 400）",
             "maxLength": 4096,
             "type": "string"
           },
@@ -1796,13 +1709,13 @@
           },
           "page_size": {
             "default": 100,
-            "description": "每页条数；缺省 100，1 到 1000，超出范围上游返回参数错误",
+            "description": "每页条数；缺省 100，1 到 1000，超出范围返回参数错误",
             "maximum": 1000,
             "minimum": 1,
             "type": "integer"
           },
           "start_date": {
-            "description": "起始日期；格式由上游接口校验",
+            "description": "起始日期，格式 `YYYYMMDD`（其他格式返回 400）",
             "maxLength": 4096,
             "type": "string"
           }
@@ -1817,7 +1730,7 @@
     {
       "name": "ft_v1_finance_balance",
       "title": "A股资产负债表",
-      "description": "查询 A 股上市公司资产负债表。支持按 `stock_code` 查询单票全部报告期，或按 `year + report_type` 分页查询指定报告期。提示：传入 `stock_code` 时支持纯代码、短后缀或长后缀，MCP 自动转换为 `.SH/.SZ/.BJ`；传入 `stock_code` 时单票模式优先，返回全部报告期且不受分页参数限制；报告期模式要求 `year + report_type`，其中 `report_type` 支持 `q1`（一季报）、`q2`（半年报）、`q3`（三季报）、`annual`（年报）和 `h1`（半年报兼容写法，按 `q2` 返回）。",
+      "description": "查询 A 股上市公司资产负债表。支持按 `stock_code` 查询单票全部报告期，或按 `year + report_type` 分页查询指定报告期。提示：传入 `stock_code` 时支持纯代码、短后缀或长后缀；传入 `stock_code` 时单票模式优先，返回全部报告期且不受分页参数限制；报告期模式要求 `year + report_type`，其中 `report_type` 支持 `q1`（一季报）、`q2`（半年报）、`q3`（三季报）、`annual`（年报）和 `h1`（半年报兼容写法，按 `q2` 返回）。",
       "inputSchema": {
         "type": "object",
         "properties": {
@@ -1844,7 +1757,7 @@
             "type": "string"
           },
           "stock_code": {
-            "description": "A 股股票代码，支持 6 位纯代码、.SH/.SZ/.BJ 短后缀或 .XSHG/.XSHE/.BJSE 长后缀；MCP 自动规范化",
+            "description": "A 股股票代码，支持 6 位纯代码、.SH/.SZ/.BJ 短后缀或 .XSHG/.XSHE/.BJSE 长后缀",
             "examples": [
               "000001",
               "000001.SZ",
@@ -1886,7 +1799,7 @@
     {
       "name": "ft_v1_finance_cashflow",
       "title": "A股现金流量表",
-      "description": "查询 A 股上市公司现金流量表。支持按 `stock_code` 查询单票全部报告期，或按 `year + report_type` 分页查询指定报告期。提示：传入 `stock_code` 时支持纯代码、短后缀或长后缀，MCP 自动转换为 `.SH/.SZ/.BJ`；传入 `stock_code` 时单票模式优先，返回全部报告期且不受分页参数限制；报告期模式要求 `year + report_type`，其中 `report_type` 支持 `q1`（一季报）、`q2`（半年报）、`q3`（三季报）、`annual`（年报）和 `h1`（半年报兼容写法，按 `q2` 返回）。",
+      "description": "查询 A 股上市公司现金流量表。支持按 `stock_code` 查询单票全部报告期，或按 `year + report_type` 分页查询指定报告期。提示：传入 `stock_code` 时支持纯代码、短后缀或长后缀；传入 `stock_code` 时单票模式优先，返回全部报告期且不受分页参数限制；报告期模式要求 `year + report_type`，其中 `report_type` 支持 `q1`（一季报）、`q2`（半年报）、`q3`（三季报）、`annual`（年报）和 `h1`（半年报兼容写法，按 `q2` 返回）。",
       "inputSchema": {
         "type": "object",
         "properties": {
@@ -1913,7 +1826,7 @@
             "type": "string"
           },
           "stock_code": {
-            "description": "A 股股票代码，支持 6 位纯代码、.SH/.SZ/.BJ 短后缀或 .XSHG/.XSHE/.BJSE 长后缀；MCP 自动规范化",
+            "description": "A 股股票代码，支持 6 位纯代码、.SH/.SZ/.BJ 短后缀或 .XSHG/.XSHE/.BJSE 长后缀",
             "examples": [
               "000001",
               "000001.SZ",
@@ -2028,7 +1941,7 @@
     {
       "name": "ft_v1_finance_income",
       "title": "A股利润表",
-      "description": "查询 A 股上市公司利润表。支持按 `stock_code` 查询单票全部报告期，或按 `year + report_type` 分页查询指定报告期。提示：传入 `stock_code` 时支持纯代码、短后缀或长后缀，MCP 自动转换为 `.SH/.SZ/.BJ`；传入 `stock_code` 时单票模式优先，返回全部报告期且不受分页参数限制；报告期模式要求 `year + report_type`，其中 `report_type` 支持 `q1`（一季报）、`q2`（半年报）、`q3`（三季报）、`annual`（年报）和 `h1`（半年报兼容写法，按 `q2` 返回）。",
+      "description": "查询 A 股上市公司利润表。支持按 `stock_code` 查询单票全部报告期，或按 `year + report_type` 分页查询指定报告期。提示：传入 `stock_code` 时支持纯代码、短后缀或长后缀；传入 `stock_code` 时单票模式优先，返回全部报告期且不受分页参数限制；报告期模式要求 `year + report_type`，其中 `report_type` 支持 `q1`（一季报）、`q2`（半年报）、`q3`（三季报）、`annual`（年报）和 `h1`（半年报兼容写法，按 `q2` 返回）。",
       "inputSchema": {
         "type": "object",
         "properties": {
@@ -2055,7 +1968,7 @@
             "type": "string"
           },
           "stock_code": {
-            "description": "A 股股票代码，支持 6 位纯代码、.SH/.SZ/.BJ 短后缀或 .XSHG/.XSHE/.BJSE 长后缀；MCP 自动规范化",
+            "description": "A 股股票代码，支持 6 位纯代码、.SH/.SZ/.BJ 短后缀或 .XSHG/.XSHE/.BJSE 长后缀",
             "examples": [
               "000001",
               "000001.SZ",
@@ -2097,7 +2010,7 @@
     {
       "name": "ft_v1_finance_stock_performance_express",
       "title": "业绩快报",
-      "description": "查询 A 股业绩快报，返回 EPS、营业收入、净利润、ROE 及同比变化等指标。支持按 `stock_code` 查询单票历史，或按 `year + report_type` 分页查询指定报告期。提示：`stock_code` 支持纯代码、短后缀或长后缀，MCP 自动转换为 `.SH/.SZ/.BJ`，传入时单票模式优先；报告期模式要求 `year + report_type`，其中 `report_type` 支持 `q1`（一季报）、`q2`（半年报）、`q3`（三季报）、`annual`（年报）和 `announcement`（公告类型）；`page/page_size` 可省略，默认 1/50。",
+      "description": "查询 A 股业绩快报，返回 EPS、营业收入、净利润、ROE 及同比变化等指标。支持按 `stock_code` 查询单票历史，或按 `year + report_type` 分页查询指定报告期。提示：`stock_code` 需传 6 位代码.大写短后缀（如 600519.SH），裸码、长后缀或交易所不匹配时查不到数据，传入时单票模式优先；报告期模式要求 `year + report_type`，其中 `report_type` 支持 `q1`（一季报）、`q2`（半年报）、`q3`（三季报）、`annual`（年报）和 `announcement`（公告类型）；`page/page_size` 可省略，默认 1/50。",
       "inputSchema": {
         "type": "object",
         "properties": {
@@ -2124,11 +2037,9 @@
             "type": "string"
           },
           "stock_code": {
-            "description": "A 股股票代码，支持 6 位纯代码、.SH/.SZ/.BJ 短后缀或 .XSHG/.XSHE/.BJSE 长后缀；MCP 自动规范化",
+            "description": "A 股股票代码，需 6 位代码.大写短后缀（如 600519.SH）；裸码、长后缀或交易所不匹配时查不到数据",
             "examples": [
-              "000001",
-              "000001.SZ",
-              "000001.XSHE"
+              "000001.SZ"
             ],
             "maxLength": 4096,
             "type": "string"
@@ -2166,7 +2077,7 @@
     {
       "name": "ft_v1_finance_stock_performance_forecast",
       "title": "业绩预告",
-      "description": "查询 A 股上市公司业绩预告，返回预告类型、预测值区间和同比变化区间等指标。支持按 `stock_code` 查询单票历史，或按 `year + report_type` 分页查询指定报告期。提示：`stock_code` 支持纯代码、短后缀或长后缀，MCP 自动转换为 `.SH/.SZ/.BJ`，传入时单票模式优先；报告期模式要求 `year + report_type`，其中 `report_type` 支持 `q1`（一季报）、`q2`（半年报）、`q3`（三季报）和 `annual`（年报）；`page/page_size` 可省略，默认 1/50。",
+      "description": "查询 A 股上市公司业绩预告，返回预告类型、预测值区间和同比变化区间等指标。支持按 `stock_code` 查询单票历史，或按 `year + report_type` 分页查询指定报告期。提示：`stock_code` 需传 6 位代码.大写短后缀（如 600519.SH），裸码、长后缀或交易所不匹配时查不到数据，传入时单票模式优先；报告期模式要求 `year + report_type`，其中 `report_type` 支持 `q1`（一季报）、`q2`（半年报）、`q3`（三季报）和 `annual`（年报）；`page/page_size` 可省略，默认 1/50。",
       "inputSchema": {
         "type": "object",
         "properties": {
@@ -2192,11 +2103,9 @@
             "type": "string"
           },
           "stock_code": {
-            "description": "A 股股票代码，支持 6 位纯代码、.SH/.SZ/.BJ 短后缀或 .XSHG/.XSHE/.BJSE 长后缀；MCP 自动规范化",
+            "description": "A 股股票代码，需 6 位代码.大写短后缀（如 600519.SH）；裸码、长后缀或交易所不匹配时查不到数据",
             "examples": [
-              "000001",
-              "000001.SZ",
-              "000001.XSHE"
+              "000001.SZ"
             ],
             "maxLength": 4096,
             "type": "string"
@@ -3126,7 +3035,7 @@
     {
       "name": "ft_v1_futures_ft_limit",
       "title": "期货涨跌停价格",
-      "description": "查询指定交易所的期货合约涨跌停价格。`exchange` 必填；必须传单个 `trade_date`，或同时传 `start_date`/`end_date`，两种日期模式不能混用，日期范围由上游校验。支持按合约代码和品种代码过滤及分页。",
+      "description": "查询指定交易所的期货合约涨跌停价格。`exchange` 必填；必须传单个 `trade_date`，或同时传 `start_date`/`end_date`，两种日期模式不能混用，`start_date`/`end_date` 间隔不能超过 31 天（超出返回参数错误）。支持按合约代码和品种代码过滤及分页。",
       "inputSchema": {
         "type": "object",
         "properties": {
@@ -3225,7 +3134,7 @@
     {
       "name": "ft_v1_futures_fut_settle",
       "title": "期货每日结算参数",
-      "description": "查询指定交易所的期货每日结算参数，包括结算价、手续费、交割费和保证金率。`exchange` 必填；必须传单个 `trade_date`，或同时传 `start_date`/`end_date`，两种日期模式不能混用，日期范围由上游校验。支持按合约过滤及分页。",
+      "description": "查询指定交易所的期货每日结算参数，包括结算价、手续费、交割费和保证金率。`exchange` 必填；必须传单个 `trade_date`，或同时传 `start_date`/`end_date`，两种日期模式不能混用，`start_date`/`end_date` 间隔不能超过 31 天（超出返回参数错误）。支持按合约过滤及分页。",
       "inputSchema": {
         "type": "object",
         "properties": {
@@ -3529,7 +3438,7 @@
           },
           "page_size": {
             "default": 50,
-            "description": "每页数量，默认 50，1 到 200，超出范围上游返回参数错误",
+            "description": "每页数量，默认 50，1 到 200，超出范围返回参数错误",
             "maximum": 200,
             "minimum": 1,
             "type": "integer"
@@ -3557,7 +3466,7 @@
         "type": "object",
         "properties": {
           "end_date": {
-            "description": "结束日期 YYYY-MM-DD（含）",
+            "description": "结束日期 `YYYY-MM-DD` 或 `YYYYMMDD`（含）",
             "maxLength": 4096,
             "type": "string"
           },
@@ -3573,7 +3482,7 @@
             "type": "string"
           },
           "start_date": {
-            "description": "开始日期 YYYY-MM-DD（含）",
+            "description": "开始日期 `YYYY-MM-DD` 或 `YYYYMMDD`（含）",
             "maxLength": 4096,
             "type": "string"
           }
@@ -3728,7 +3637,7 @@
           },
           "page_size": {
             "default": 100,
-            "description": "每页条数；缺省 100，1 到 1000，超出范围上游返回参数错误",
+            "description": "每页条数；缺省 100，1 到 1000，超出范围返回参数错误",
             "maximum": 1000,
             "minimum": 1,
             "type": "integer"
@@ -4148,7 +4057,7 @@
             "type": "integer"
           },
           "symbol": {
-            "description": "指数代码，如 000300.SH、932000.CSI（中证指数须带 .CSI 后缀）；格式由上游标的解析器校验",
+            "description": "指数代码，如 000300.SH、932000.CSI（中证指数须带 .CSI 后缀）",
             "maxLength": 4096,
             "type": "string"
           },
@@ -4170,7 +4079,7 @@
     {
       "name": "ft_v1_index_description_all",
       "title": "指数基础信息",
-      "description": "获取全部指数的基础信息（全称、简称、市净率 PB、市盈率 TTM），返回数组。覆盖沪深京三市全部指数，按 `symbol` 升序排列。每项含指数代码（如 `000001.XSHG`）、全称（如「上证综合指数」）、简称（如「上证指数」）。提示：无入参，直接 GET 即可；`symbol` 为标的代码，含交易所后缀：上交所 `.XSHG`、深交所 `.XSHE`、北交所 `.BJSE`。支持分页；`page/page_size` 可省略，上游缺省 `1/200`，`page_size` 超过 500 按 500 处理。",
+      "description": "获取全部指数的基础信息（全称、简称、市净率 PB、市盈率 TTM），返回数组。覆盖沪深京三市全部指数，按 `symbol` 升序排列。每项含指数代码（如 `000001.XSHG`）、全称（如「上证综合指数」）、简称（如「上证指数」）。提示：无入参，直接 GET 即可；`symbol` 为标的代码，含交易所后缀：上交所 `.XSHG`、深交所 `.XSHE`、北交所 `.BJSE`。支持分页；`page/page_size` 可省略，缺省 `1/200`，`page_size` 超过 500 按 500 处理。",
       "inputSchema": {
         "type": "object",
         "properties": {
@@ -4375,7 +4284,7 @@
           },
           "page_size": {
             "default": 100,
-            "description": "每页条数；缺省 100，1 到 1000，超出范围上游返回参数错误",
+            "description": "每页条数；缺省 100，1 到 1000，超出范围返回参数错误",
             "maximum": 1000,
             "minimum": 1,
             "type": "integer"
@@ -4425,7 +4334,7 @@
             "type": "integer"
           },
           "trade_date": {
-            "description": "交易日期；格式由上游接口校验",
+            "description": "交易日期，格式 `YYYYMMDD`（其他格式返回 400）",
             "maxLength": 4096,
             "type": "string"
           }
@@ -4472,26 +4381,26 @@
     {
       "name": "ft_v1_namechange",
       "title": "股票曾用名",
-      "description": "查询某只 A 股股票的历史曾用名。按 `change_date` 推导出每个名称的连续使用区间，最新名称的 `end_date` 为 `null`，较早名称的 `end_date` = 下一条变更日期 − 1 天；最早曾用名之前原名称的 `start_date` 可能为空字符串。不分页，单只股票一次性返回全部历史名称记录；多 `trade_code`（逗号分隔）时合并返回。提示：`trade_code` 必填，为空时返回 `code: 400，message: \"trade_code is required\"`；`trade_code` 支持逗号分隔多个代码，如 `600848.SH，000001.SZ`；日期参数格式为 `YYYYMMDD`（如 `20200101`），非时间戳。",
+      "description": "查询某只 A 股股票的历史曾用名。按 `change_date` 推导出每个名称的连续使用区间，最新名称的 `end_date` 为 `null`，较早名称的 `end_date` = 下一条变更日期 − 1 天；最早曾用名之前原名称的 `start_date` 可能为空字符串。不分页，单只股票一次性返回全部历史名称记录；多 `trade_code`（逗号分隔）时合并返回。提示：`trade_code` 必填，为空时返回 `code: 400，message: \"trade_code is required\"`；`trade_code` 支持逗号分隔多个代码，如 `600848.SH,000001.SZ`；日期参数格式为 `YYYYMMDD`（如 `20200101`），非时间戳。",
       "inputSchema": {
         "type": "object",
         "properties": {
           "end_date": {
-            "description": "过滤区间结束日期；日期格式由上游接口校验",
+            "description": "过滤区间结束日期，格式 `YYYYMMDD`（传入其他格式过滤结果不可预期）",
             "maxLength": 4096,
             "type": "string"
           },
           "start_date": {
-            "description": "过滤区间起始日期；日期格式由上游接口校验",
+            "description": "过滤区间起始日期，格式 `YYYYMMDD`；不能大于 end_date（同时提供时返回 400）",
             "maxLength": 4096,
             "type": "string"
           },
           "trade_code": {
-            "description": "A 股代码，支持无后缀、.SH/.SZ/.BJ 短后缀或 .XSHG/.XSHE/.BJSE 长后缀，代码须与交易所匹配；多个代码使用英文逗号分隔，MCP 会规范化为短后缀大写格式",
+            "description": "A 股代码，需带 .SH/.SZ/.BJ 大写短后缀（如 600848.SH），裸码、长后缀或交易所不匹配时查不到数据；多个代码使用英文逗号分隔",
             "examples": [
-              "600848",
-              "600848.SH,000001.XSHE",
-              "920163.BJSE"
+              "600848.SH",
+              "600848.SH,000001.SZ",
+              "920163.BJ"
             ],
             "maxLength": 4096,
             "type": "string"
@@ -4582,7 +4491,7 @@
         "type": "object",
         "properties": {
           "date": {
-            "description": "公告日期；日期格式由上游接口校验",
+            "description": "公告日期，格式 `YYYYMMDD` 或 `YYYY-MM-DD`（其他格式返回 400）",
             "maxLength": 4096,
             "type": "string"
           },
@@ -4682,7 +4591,7 @@
           },
           "page_size": {
             "default": 100,
-            "description": "每页条数；缺省 100，1 到 1000，超出范围上游返回参数错误",
+            "description": "每页条数；缺省 100，1 到 1000，超出范围返回参数错误",
             "maximum": 1000,
             "minimum": 1,
             "type": "integer"
@@ -4724,7 +4633,7 @@
           },
           "page_size": {
             "default": 100,
-            "description": "每页条数；缺省 100，1 到 1000，超出范围上游返回参数错误",
+            "description": "每页条数；缺省 100，1 到 1000，超出范围返回参数错误",
             "maximum": 1000,
             "minimum": 1,
             "type": "integer"
@@ -4764,26 +4673,26 @@
     {
       "name": "ft_v1_stk_code_change",
       "title": "A股代码变更",
-      "description": "查询某只 A 股股票的代码变更历史，返回每个代码的起止使用区间。每条记录的 `code` 为该时段实际使用的代码，`trade_code` 始终为该股票的最新代码。已上市股票的最早区间起始优先使用上市日期；最早一次变更前的原代码若与变更后代码不同，则补一条记录，`start_date` 为空字符串、`end_date` 为最早一次变更日期 − 1 天。提示：`trade_code` 必填，为空或仅空白字符时返回 `code: 400，message: \"trade_code is required\"`；`trade_code` 支持逗号分隔多个代码，如 `600848.SH` 或 `600848.SH，000001.SZ`；日期参数格式为 `YYYYMMDD`（如 `20200101`），非时间戳。",
+      "description": "查询某只 A 股股票的代码变更历史，返回每个代码的起止使用区间。每条记录的 `code` 为该时段实际使用的代码，`trade_code` 始终为该股票的最新代码。已上市股票的最早区间起始优先使用上市日期；最早一次变更前的原代码若与变更后代码不同，则补一条记录，`start_date` 为空字符串、`end_date` 为最早一次变更日期 − 1 天。提示：`trade_code` 必填，为空或仅空白字符时返回 `code: 400，message: \"trade_code is required\"`；`trade_code` 支持逗号分隔多个代码，如 `600848.SH` 或 `600848.SH,000001.SZ`；日期参数格式为 `YYYYMMDD`（如 `20200101`），非时间戳。",
       "inputSchema": {
         "type": "object",
         "properties": {
           "end_date": {
-            "description": "过滤区间结束日期；日期格式由上游接口校验",
+            "description": "过滤区间结束日期，格式 `YYYYMMDD`（传入其他格式过滤结果不可预期）",
             "maxLength": 4096,
             "type": "string"
           },
           "start_date": {
-            "description": "过滤区间起始日期；日期格式由上游接口校验",
+            "description": "过滤区间起始日期，格式 `YYYYMMDD`；不能大于 end_date（同时提供时返回 400）",
             "maxLength": 4096,
             "type": "string"
           },
           "trade_code": {
-            "description": "A 股代码，支持无后缀、.SH/.SZ/.BJ 短后缀或 .XSHG/.XSHE/.BJSE 长后缀，代码须与交易所匹配；多个代码使用英文逗号分隔，MCP 会规范化为短后缀大写格式",
+            "description": "A 股代码，需带 .SH/.SZ/.BJ 大写短后缀（如 600848.SH），裸码、长后缀或交易所不匹配时查不到数据；多个代码使用英文逗号分隔",
             "examples": [
-              "600848",
-              "600848.SH,000001.XSHE",
-              "920163.BJSE"
+              "600848.SH",
+              "600848.SH,000001.SZ",
+              "920163.BJ"
             ],
             "maxLength": 4096,
             "type": "string"
@@ -4867,21 +4776,21 @@
     {
       "name": "ft_v1_stk_manager_hold",
       "title": "上市公司管理层持股",
-      "description": "查询上市公司管理层人员持股变动明细，含截止日期、姓名、持股数、变动原因。可按 `end_date` 精确匹配过滤。不分页，单只股票一次性返回全部持股记录；多 `trade_code`（逗号分隔）时合并返回。提示：`trade_code` 必填，为空时返回 `code: 400，message: \"trade_code is required\"`；`trade_code` 支持逗号分隔多个代码，如 `600848.SH，000001.SZ`；不传则返回该股票全部历史记录。",
+      "description": "查询上市公司管理层人员持股变动明细，含截止日期、姓名、持股数、变动原因。可按 `end_date` 精确匹配过滤。不分页，单只股票一次性返回全部持股记录；多 `trade_code`（逗号分隔）时合并返回。提示：`trade_code` 必填，为空时返回 `code: 400，message: \"trade_code is required\"`；`trade_code` 支持逗号分隔多个代码，如 `600848.SH,000001.SZ`；不传则返回该股票全部历史记录。",
       "inputSchema": {
         "type": "object",
         "properties": {
           "end_date": {
-            "description": "截止日期；格式由上游接口校验",
+            "description": "截止日期，格式 `YYYYMMDD`（精确匹配，其他格式查不到数据）",
             "maxLength": 4096,
             "type": "string"
           },
           "trade_code": {
-            "description": "A 股代码，支持无后缀、.SH/.SZ/.BJ 短后缀或 .XSHG/.XSHE/.BJSE 长后缀，代码须与交易所匹配；多个代码使用英文逗号分隔，MCP 会规范化为短后缀大写格式",
+            "description": "A 股代码，需带 .SH/.SZ/.BJ 大写短后缀（如 600848.SH），裸码、长后缀或交易所不匹配时查不到数据；多个代码使用英文逗号分隔",
             "examples": [
-              "600848",
-              "600848.SH,000001.XSHE",
-              "920163.BJSE"
+              "600848.SH",
+              "600848.SH,000001.SZ",
+              "920163.BJ"
             ],
             "maxLength": 4096,
             "type": "string"
@@ -4896,21 +4805,21 @@
     {
       "name": "ft_v1_stk_manager_pay",
       "title": "上市公司管理层薪酬",
-      "description": "查询上市公司管理层人员年度薪酬，含截止日期、姓名、年度薪酬、货币币种。可按 `end_date` 精确匹配过滤。不分页，单只股票一次性返回全部薪酬记录；多 `trade_code`（逗号分隔）时合并返回。提示：`trade_code` 必填，为空时返回 `code: 400，message: \"trade_code is required\"`；`trade_code` 支持逗号分隔多个代码，如 `600848.SH，000001.SZ`；不传则返回该股票全部历史记录。",
+      "description": "查询上市公司管理层人员年度薪酬，含截止日期、姓名、年度薪酬、货币币种。可按 `end_date` 精确匹配过滤。不分页，单只股票一次性返回全部薪酬记录；多 `trade_code`（逗号分隔）时合并返回。提示：`trade_code` 必填，为空时返回 `code: 400，message: \"trade_code is required\"`；`trade_code` 支持逗号分隔多个代码，如 `600848.SH,000001.SZ`；不传则返回该股票全部历史记录。",
       "inputSchema": {
         "type": "object",
         "properties": {
           "end_date": {
-            "description": "截止日期；格式由上游接口校验",
+            "description": "截止日期，格式 `YYYYMMDD`（精确匹配，其他格式查不到数据）",
             "maxLength": 4096,
             "type": "string"
           },
           "trade_code": {
-            "description": "A 股代码，支持无后缀、.SH/.SZ/.BJ 短后缀或 .XSHG/.XSHE/.BJSE 长后缀，代码须与交易所匹配；多个代码使用英文逗号分隔，MCP 会规范化为短后缀大写格式",
+            "description": "A 股代码，需带 .SH/.SZ/.BJ 大写短后缀（如 600848.SH），裸码、长后缀或交易所不匹配时查不到数据；多个代码使用英文逗号分隔",
             "examples": [
-              "600848",
-              "600848.SH,000001.XSHE",
-              "920163.BJSE"
+              "600848.SH",
+              "600848.SH,000001.SZ",
+              "920163.BJ"
             ],
             "maxLength": 4096,
             "type": "string"
@@ -4925,31 +4834,31 @@
     {
       "name": "ft_v1_stk_managers",
       "title": "上市公司管理层",
-      "description": "查询上市公司管理层人员信息，含股票名称、姓名、岗位类别、职位、出生年月、候选日期、任职区间、在职情况、变动原因等。可按 `candi_date` 精确匹配、按 `begin_date`/`end_date` 区间过滤。不分页，单只股票一次性返回全部管理层记录；多 `trade_code`（逗号分隔）时合并返回。提示：`trade_code` 必填，为空时返回 `code: 400，message: \"trade_code is required\"`；`trade_code` 支持逗号分隔多个代码，如 `600848.SH，000001.SZ`；日期参数格式为 `YYYYMMDD`（如 `20200101`），非时间戳。",
+      "description": "查询上市公司管理层人员信息，含股票名称、姓名、岗位类别、职位、出生年月、候选日期、任职区间、在职情况、变动原因等。可按 `candi_date` 精确匹配、按 `begin_date`/`end_date` 区间过滤。不分页，单只股票一次性返回全部管理层记录；多 `trade_code`（逗号分隔）时合并返回。提示：`trade_code` 必填，为空时返回 `code: 400，message: \"trade_code is required\"`；`trade_code` 支持逗号分隔多个代码，如 `600848.SH,000001.SZ`；日期参数格式为 `YYYYMMDD`（如 `20200101`），非时间戳。",
       "inputSchema": {
         "type": "object",
         "properties": {
           "begin_date": {
-            "description": "任职起始日；格式由上游接口校验",
+            "description": "任职起始日，格式 `YYYYMMDD`；不能大于 end_date（同时提供时返回 400）",
             "maxLength": 4096,
             "type": "string"
           },
           "candi_date": {
-            "description": "候选日期；格式由上游接口校验",
+            "description": "候选日期，格式 `YYYYMMDD`（精确匹配，其他格式查不到数据）",
             "maxLength": 4096,
             "type": "string"
           },
           "end_date": {
-            "description": "任职截止日；格式由上游接口校验",
+            "description": "任职截止日，格式 `YYYYMMDD`（传入其他格式过滤结果不可预期）",
             "maxLength": 4096,
             "type": "string"
           },
           "trade_code": {
-            "description": "A 股代码，支持无后缀、.SH/.SZ/.BJ 短后缀或 .XSHG/.XSHE/.BJSE 长后缀，代码须与交易所匹配；多个代码使用英文逗号分隔，MCP 会规范化为短后缀大写格式",
+            "description": "A 股代码，需带 .SH/.SZ/.BJ 大写短后缀（如 600848.SH），裸码、长后缀或交易所不匹配时查不到数据；多个代码使用英文逗号分隔",
             "examples": [
-              "600848",
-              "600848.SH,000001.XSHE",
-              "920163.BJSE"
+              "600848.SH",
+              "600848.SH,000001.SZ",
+              "920163.BJ"
             ],
             "maxLength": 4096,
             "type": "string"
@@ -4969,7 +4878,7 @@
         "type": "object",
         "properties": {
           "change_date": {
-            "description": "变更日期；格式由上游接口校验",
+            "description": "变更日期，格式 `YYYYMMDD`（精确匹配，其他格式查不到数据）",
             "maxLength": 4096,
             "type": "string"
           },
@@ -5066,7 +4975,7 @@
             "type": "integer"
           },
           "limit": {
-            "description": "返回条数上限，1 到 1000；超出范围上游返回参数错误",
+            "description": "返回条数上限，1 到 1000；超出范围返回参数错误",
             "maximum": 1000,
             "minimum": 1,
             "type": "integer"
@@ -5098,7 +5007,7 @@
     {
       "name": "ft_v1_stock_candlesticks_daily",
       "title": "股票日K快照",
-      "description": "一次查询指定交易日全部普通 A 股的日 K 快照，每条记录含标的代码（带标准市场后缀，如 600519.SH、000001.SZ、920001.BJ）、开盘价、最高价、最低价、收盘价、收盘时间戳、开盘时间戳、成交额、成交量（单位股）和换手率；开高低收和成交额为字符串，`turnover_rate` 为换手率比例值（如 0.00763 表示约 0.763%）。数据范围为普通 A 股日 K，不包含 ETF、可转债、指数等其他标的。提示：`trade_date` 必填，格式 YYYYMMDD 且必须是交易日，否则返回参数错误；结果按 `trade_code` 升序，单日全市场约 5500 条，需按 `pages` 翻页取全。支持分页；`page/page_size` 可省略，上游缺省 `1/200`，`page` 0、`page_size` 0 或超过 500 返回参数错误。",
+      "description": "一次查询指定交易日全部普通 A 股的日 K 快照，每条记录含标的代码（带标准市场后缀，如 600519.SH、000001.SZ、920001.BJ）、开盘价、最高价、最低价、收盘价、收盘时间戳、开盘时间戳、成交额、成交量（单位股）和换手率；开高低收和成交额为字符串，`turnover_rate` 为换手率比例值（如 0.00763 表示约 0.763%）。数据范围为普通 A 股日 K，不包含 ETF、可转债、指数等其他标的。提示：`trade_date` 必填，格式 YYYYMMDD 且必须是交易日，否则返回参数错误；结果按 `trade_code` 升序，单日全市场约 5500 条，需按 `pages` 翻页取全。支持分页；`page/page_size` 可省略，缺省 `1/200`，`page` 0、`page_size` 0 或超过 500 返回参数错误。",
       "inputSchema": {
         "type": "object",
         "properties": {
@@ -5130,7 +5039,7 @@
     {
       "name": "ft_v1_stock_capital_flows",
       "title": "股票资金流向",
-      "description": "查询股票 15 分钟资金流向快照，返回超大单、大单、中单、小单净流入及主力净流入。可按日期、时点和股票代码过滤；仅传 `time` 时上游返回参数错误，`time` 必须与 `date` 同时使用。",
+      "description": "查询股票 15 分钟资金流向快照，返回超大单、大单、中单、小单净流入及主力净流入。可按日期、时点和股票代码过滤；仅传 `time` 时返回参数错误，`time` 必须与 `date` 同时使用。",
       "inputSchema": {
         "type": "object",
         "properties": {
@@ -5388,7 +5297,7 @@
             "type": "string"
           },
           "fields": {
-            "description": "可选 records 一级字段列表，格式由上游解析",
+            "description": "可选 records 一级字段列表，多个字段用英文逗号分隔；不支持的返回字段返回参数错误",
             "maxLength": 4096,
             "type": "string"
           },
@@ -5524,7 +5433,7 @@
           },
           "page_size": {
             "default": 50,
-            "description": "每页数量，默认 50，1 到 200，超出范围上游返回参数错误",
+            "description": "每页数量，默认 50，1 到 200，超出范围返回参数错误",
             "maximum": 200,
             "minimum": 1,
             "type": "integer"
@@ -5542,12 +5451,12 @@
     {
       "name": "ft_v1_sw_index_history_minutes",
       "title": "市场数据 v1：sw-index/history-minutes",
-      "description": "查询指定申万指数在日期区间内的 1 分钟 K 线，返回开高低收、成交量和成交额。",
+      "description": "查询指定申万指数在日期区间内的 1 分钟 K 线，返回开高低收、成交量和成交额。每日数据时段为 09:30~14:57，收盘集合竞价时段无数据；`high`/`low` 为截至该分钟的当日累计最高/最低，非该分钟自身极值。",
       "inputSchema": {
         "type": "object",
         "properties": {
           "end_date": {
-            "description": "结束日期；格式由上游接口校验",
+            "description": "结束日期，格式 `YYYYMMDD`（其他格式返回 400）",
             "maxLength": 4096,
             "type": "string"
           },
@@ -5563,13 +5472,13 @@
           },
           "page_size": {
             "default": 50,
-            "description": "每页数量，默认 50，1 到 200，超出范围上游返回参数错误",
+            "description": "每页数量，默认 50，1 到 200，超出范围返回参数错误",
             "maximum": 200,
             "minimum": 1,
             "type": "integer"
           },
           "start_date": {
-            "description": "开始日期；格式由上游接口校验",
+            "description": "开始日期，格式 `YYYYMMDD`（其他格式返回 400）",
             "maxLength": 4096,
             "type": "string"
           }
@@ -5604,12 +5513,12 @@
     {
       "name": "ft_v1_sw_industry_daily_metrics",
       "title": "申万行业日度指标",
-      "description": "查询单个申万行业的日频估值、资金和量价指标时间序列。`level`、日期范围和行业代码均由上游服务解析校验，不存在的行业返回空结果。",
+      "description": "查询单个申万行业的日频估值、资金和量价指标时间序列（如指数收盘、市盈率/市净率及其分位、股息率、换手率、总市值、成交额等），不含昨收、开、高、低、成交量。`start_date` 不能晚于 `end_date`；不存在的行业返回空结果。",
       "inputSchema": {
         "type": "object",
         "properties": {
           "end_date": {
-            "description": "截止日期；格式和范围由上游接口校验",
+            "description": "截止日期，格式 `YYYYMMDD`（其他格式返回参数错误）",
             "maxLength": 4096,
             "type": "string"
           },
@@ -5638,7 +5547,7 @@
             "type": "integer"
           },
           "start_date": {
-            "description": "起始日期；格式和范围由上游接口校验",
+            "description": "起始日期，格式 `YYYYMMDD`（其他格式返回参数错误）",
             "maxLength": 4096,
             "type": "string"
           }
@@ -5724,7 +5633,7 @@
           },
           "page_size": {
             "default": 100,
-            "description": "每页条数；缺省 100，1 到 1000，超出范围上游返回参数错误",
+            "description": "每页条数；缺省 100，1 到 1000，超出范围返回参数错误",
             "maximum": 1000,
             "minimum": 1,
             "type": "integer"
@@ -5779,7 +5688,7 @@
           },
           "page_size": {
             "default": 100,
-            "description": "每页条数；缺省 100，1 到 1000，超出范围上游返回参数错误",
+            "description": "每页条数；缺省 100，1 到 1000，超出范围返回参数错误",
             "maximum": 1000,
             "minimum": 1,
             "type": "integer"
@@ -5834,7 +5743,7 @@
           },
           "page_size": {
             "default": 100,
-            "description": "每页条数；缺省 100，1 到 1000，超出范围上游返回参数错误",
+            "description": "每页条数；缺省 100，1 到 1000，超出范围返回参数错误",
             "maximum": 1000,
             "minimum": 1,
             "type": "integer"
@@ -5883,7 +5792,7 @@
     {
       "name": "ft_v1_ths_board_constituents",
       "title": "同花顺板块成分股",
-      "description": "按板块代码或名称查询同花顺板块的成分股列表，每条记录含板块代码、板块名称、股票代码和股票名称。覆盖概念 / 行业 / 地域 / 证监会（csrc）四类板块，当前在线 503 个（概念 361 / 行业 90 / 地域 33 / csrc 19）；最大板块（如融资融券 3872 只）需翻页取全。不传 `date` 返回当前仍在板块内的成分股，传 `date` 返回截至该日的成分股（含此后已退出的）。成分股进出记录自 20260907 起采集、无历史回填，且各类板块起始日不同（行业 20260907 / 概念 20260908 / 地域、csrc 20260909）；查询日早于该板块首次采集日时按首次采集日当天的在籍名单返回，不返回空。提示：`board_code` 与 `board_name` 至少传一个，两者都传时取交集，都不传返回 400；概念板块的 `board_code` 是本接口自己的编号段（概念 300xxx/308xxx/309xxx，如「军工」是 300082；行业 881xxx、地域 882xxx、csrc 为大写单字母），其它编号体系的概念代码查不到，概念板块建议直接传 `board_name`；板块名称跨类型可能重名（如「教育」同时属于行业 881178 与 csrc P），命中多个时返回 400，message 中按「代码/名称」列出全部候选，可补 `board_type`（industry/concept/region/csrc）消歧或改用 `board_code`；结果按 `stock_code` 升序。支持分页；`page/page_size` 可省略，上游缺省 `1/100`，`page` 0 或 `page_size` 0、超过 1000 返回参数错误。",
+      "description": "按板块代码或名称查询同花顺板块的成分股列表，每条记录含板块代码、板块名称、股票代码和股票名称。覆盖概念 / 行业 / 地域 / 证监会（csrc）四类板块，当前在线 503 个（概念 361 / 行业 90 / 地域 33 / csrc 19）；最大板块（如融资融券 3872 只）需翻页取全。不传 `date` 返回当前仍在板块内的成分股，传 `date` 返回截至该日的成分股（含此后已退出的）。成分股进出记录自 20260907 起采集、无历史回填，且各类板块起始日不同（行业 20260907 / 概念 20260908 / 地域、csrc 20260909）；查询日早于该板块首次采集日时按首次采集日当天的在籍名单返回，不返回空。提示：`board_code` 与 `board_name` 至少传一个，两者都传时取交集，都不传返回 400；概念板块的 `board_code` 是本接口自己的编号段（概念 300xxx/308xxx/309xxx，如「军工」是 300082；行业 881xxx、地域 882xxx、csrc 为大写单字母），其它编号体系的概念代码查不到，概念板块建议直接传 `board_name`；板块名称跨类型可能重名（如「教育」同时属于行业 881178 与 csrc P），命中多个时返回 400，message 中按「代码/名称」列出全部候选，可补 `board_type`（industry/concept/region/csrc）消歧或改用 `board_code`；结果按 `stock_code` 升序。支持分页；`page/page_size` 可省略，缺省 `1/100`，`page` 0 或 `page_size` 0、超过 1000 返回参数错误。",
       "inputSchema": {
         "type": "object",
         "properties": {
@@ -6018,7 +5927,7 @@
           },
           "page_size": {
             "default": 100,
-            "description": "每页条数；缺省 100，1 到 1000，超出范围上游返回参数错误",
+            "description": "每页条数；缺省 100，1 到 1000，超出范围返回参数错误",
             "maximum": 1000,
             "minimum": 1,
             "type": "integer"
@@ -6106,7 +6015,7 @@
           },
           "page_size": {
             "default": 100,
-            "description": "每页条数；缺省 100，1 到 1000，超出范围上游返回参数错误",
+            "description": "每页条数；缺省 100，1 到 1000，超出范围返回参数错误",
             "maximum": 1000,
             "minimum": 1,
             "type": "integer"
@@ -6151,7 +6060,7 @@
           },
           "page_size": {
             "default": 100,
-            "description": "每页条数；缺省 100，1 到 1000，超出范围上游返回参数错误",
+            "description": "每页条数；缺省 100，1 到 1000，超出范围返回参数错误",
             "maximum": 1000,
             "minimum": 1,
             "type": "integer"
@@ -6199,7 +6108,7 @@
           },
           "page_size": {
             "default": 100,
-            "description": "每页条数；缺省 100，1 到 1000，超出范围上游返回参数错误",
+            "description": "每页条数；缺省 100，1 到 1000，超出范围返回参数错误",
             "maximum": 1000,
             "minimum": 1,
             "type": "integer"
@@ -6244,7 +6153,7 @@
         "type": "object",
         "properties": {
           "end_date": {
-            "description": "结束日期整数；格式和有效范围由上游接口校验",
+            "description": "结束日期整数，格式 `YYYYMMDD`（无效值返回 400）",
             "minimum": 1,
             "type": "integer"
           },
@@ -6257,7 +6166,7 @@
             "type": "string"
           },
           "start_date": {
-            "description": "起始日期整数；格式和有效范围由上游接口校验",
+            "description": "起始日期整数，格式 `YYYYMMDD`（无效值返回 400）",
             "minimum": 1,
             "type": "integer"
           }
@@ -6278,7 +6187,7 @@
         "type": "object",
         "properties": {
           "end_date": {
-            "description": "解禁结束日期；支持 YYYYMMDD 或 YYYY-MM-DD，由上游解析",
+            "description": "解禁结束日期；支持 YYYYMMDD 或 YYYY-MM-DD",
             "maxLength": 4096,
             "type": "string"
           },
@@ -6293,7 +6202,7 @@
             "type": "integer"
           },
           "start_date": {
-            "description": "解禁开始日期；支持 YYYYMMDD 或 YYYY-MM-DD，由上游解析",
+            "description": "解禁开始日期；支持 YYYYMMDD 或 YYYY-MM-DD",
             "maxLength": 4096,
             "type": "string"
           },
@@ -6314,7 +6223,7 @@
         "type": "object",
         "properties": {
           "end_date": {
-            "description": "结束日期；格式由上游接口校验",
+            "description": "结束日期，格式 `YYYYMMDD`（其他格式返回 400）",
             "maxLength": 4096,
             "type": "string"
           },
@@ -6326,13 +6235,13 @@
           },
           "page_size": {
             "default": 100,
-            "description": "每页条数；缺省 100，1 到 1000，超出范围上游返回参数错误",
+            "description": "每页条数；缺省 100，1 到 1000，超出范围返回参数错误",
             "maximum": 1000,
             "minimum": 1,
             "type": "integer"
           },
           "start_date": {
-            "description": "起始日期；格式由上游接口校验",
+            "description": "起始日期，格式 `YYYYMMDD`（其他格式返回 400）",
             "maxLength": 4096,
             "type": "string"
           }
@@ -6404,7 +6313,7 @@
             "type": "integer"
           },
           "stock_code": {
-            "description": "股票代码；格式由上游接口校验",
+            "description": "股票代码，6 位裸码（如 600519）；带交易所后缀查不到数据",
             "maxLength": 4096,
             "type": "string"
           },
@@ -6470,7 +6379,7 @@
             "type": "integer"
           },
           "page_size": {
-            "description": "每页条数，必填；1 到 500，超出范围上游返回参数错误",
+            "description": "每页条数，必填；1 到 500，超出范围返回参数错误",
             "maximum": 500,
             "minimum": 1,
             "type": "integer"
@@ -6530,7 +6439,7 @@
     {
       "name": "ft_v2_announcements_stock_announcements",
       "title": "公告列表",
-      "description": "查询 A 股公告列表。支持按 `stock_code` 查询单票历史公告，或按 `start_date` 查询指定单日的全市场公告。提示：传入 `stock_code` 时支持纯代码、短后缀或长后缀，MCP 自动转换为 `.SH/.SZ/.BJ`；必须提供 `stock_code` 或 `start_date` 之一，否则报错；`type` 当前只支持 `stock`。需要文件本体时，取记录的 `url_hash` 调用 `ft_v2_announcements_stock_announcement_download` 获取公网下载信息。",
+      "description": "查询 A 股公告列表。支持按 `stock_code` 查询单票历史公告，或按 `start_date` 查询指定单日的全市场公告。提示：传入 `stock_code` 时需 6 位数字.SH/SZ/BJ（大写短后缀，如 600000.SH），其它格式返回 400；必须提供 `stock_code` 或 `start_date` 之一，否则报错；`type` 当前只支持 `stock`。需要文件本体时，取记录的 `url_hash` 调用 `ft_v2_announcements_stock_announcement_download` 获取公网下载信息。",
       "inputSchema": {
         "type": "object",
         "properties": {
@@ -6540,7 +6449,7 @@
             "type": "integer"
           },
           "page_size": {
-            "description": "每页条数，必填；1 到 500，超出范围上游返回参数错误",
+            "description": "每页条数，必填；1 到 500，超出范围返回参数错误",
             "maximum": 500,
             "minimum": 1,
             "type": "integer"
@@ -6551,11 +6460,9 @@
             "type": "string"
           },
           "stock_code": {
-            "description": "A 股股票代码，支持 6 位纯代码、.SH/.SZ/.BJ 短后缀或 .XSHG/.XSHE/.BJSE 长后缀；MCP 自动规范化",
+            "description": "A 股股票代码，需 6 位数字.SH/SZ/BJ（大写短后缀，如 600000.SH），其它格式返回 400",
             "examples": [
-              "000001",
-              "000001.SZ",
-              "000001.XSHE"
+              "000001.SZ"
             ],
             "maxLength": 4096,
             "type": "string"
@@ -6697,7 +6604,7 @@
           },
           "page_size": {
             "default": 100,
-            "description": "每页条数；缺省 100，1 到 1000，超出范围上游返回参数错误",
+            "description": "每页条数；缺省 100，1 到 1000，超出范围返回参数错误",
             "maximum": 1000,
             "minimum": 1,
             "type": "integer"
@@ -6740,7 +6647,7 @@
           },
           "page_size": {
             "default": 50,
-            "description": "每页条数；缺省 50，1 到 200，超出范围上游返回参数错误",
+            "description": "每页条数；缺省 50，1 到 200，超出范围返回参数错误",
             "maximum": 200,
             "minimum": 1,
             "type": "integer"
@@ -6768,7 +6675,7 @@
     {
       "name": "ft_v2_convertible_bond_candlesticks_batch",
       "title": "批量可转债历史K线",
-      "description": "批量获取可转债历史日、周、月或年 K 线，不包含当日盘中实时行情。`symbols`、`interval_unit`、`since_ts_millis`、`until_ts_millis` 必填，最多 20 只可转债，时间范围最多 12 个自然月；结果按请求标的分组，每组 K 线按时间升序，`limit` 保留最新若干根。",
+      "description": "批量获取可转债历史日、周、月或年 K 线，不包含当日盘中实时行情。`symbols`、`interval_unit`、`since_ts_millis`、`until_ts_millis` 必填，单次最多 20 只，时间范围最多 12 个自然月；代码必须带市场后缀（.SH/.SZ 或 .XSHG/.XSHE，如 113042.SH、123107.SZ），裸代码返回参数错误；结果为逐根 K 线记录，每条带 `symbol` 字段，同一标的的记录按时间升序，`limit` 保留最新若干根，无行情标的不产生记录。",
       "inputSchema": {
         "type": "object",
         "properties": {
@@ -6815,13 +6722,12 @@
             "type": "integer"
           },
           "symbols": {
-            "description": "可转债代码列表，如 [\"113042.SH\",\"123107.SZ\"]；单次最多 20 只",
+            "description": "可转债代码列表，如 [\"113042.SH\",\"123107.SZ\"]；支持 .XSHG/.XSHE 长后缀",
             "items": {
               "maxLength": 256,
               "type": "string"
             },
-            "maxItems": 20,
-            "minItems": 1,
+            "maxItems": 500,
             "type": "array"
           },
           "until_ts_millis": {
@@ -6878,8 +6784,7 @@
               "maxLength": 256,
               "type": "string"
             },
-            "maxItems": 20,
-            "minItems": 1,
+            "maxItems": 500,
             "type": "array"
           },
           "until_ts_millis": {
@@ -6932,7 +6837,7 @@
     {
       "name": "ft_v2_etf_candlesticks_batch",
       "title": "批量ETF K线",
-      "description": "批量获取多只 ETF 的历史周期 K 线（日/周/月/年），返回每个标的的开高低收、成交量额。提示：`symbols`、`interval_unit`、`until_ts_millis` 必填；`symbols` 单次最多 20 只；代码必须带市场后缀（.SH/.SZ 或 .XSHG/.XSHE，如 510300.SH、159915.SZ），格式由上游标的解析器校验；分钟 K 线不在本接口（传 `minute` 会被上游拒绝），实时分时见 v4 工具；`since_ts_millis` 省略时按 `until_ts_millis` 与 `limit` 返回最近 N 根；显式时间范围上限按周期：日 12、周 120、月 360、年 600 个自然月；`limit` 为 1 到 1000，未传 `since_ts_millis` 且未传 `limit` 时上游返回参数错误。",
+      "description": "批量获取多只 ETF 的历史周期 K 线（日/周/月/年），结果为逐根 K 线记录，每条带 `symbol` 字段、开高低收与成交量额，同一标的的记录按时间升序，无行情标的不产生记录。提示：`symbols`、`interval_unit`、`until_ts_millis` 必填，单次最多 20 只；代码必须带市场后缀（.SH/.SZ 或 .XSHG/.XSHE，如 510300.SH、159915.SZ）；分钟 K 线不在本接口（传 `minute` 返回参数错误），实时分时见 v4 工具；`since_ts_millis` 省略时按 `until_ts_millis` 与 `limit` 返回最近 N 根；显式时间范围上限按周期：日 12、周 120、月 360、年 600 个自然月；`limit` 为 1 到 1000，未传 `since_ts_millis` 且未传 `limit` 时返回参数错误。",
       "inputSchema": {
         "type": "object",
         "properties": {
@@ -6962,7 +6867,7 @@
             "type": "string"
           },
           "limit": {
-            "description": "每个标的的返回条数上限，1 到 1000；超出范围上游返回参数错误",
+            "description": "每个标的的返回条数上限，1 到 1000；超出范围返回参数错误",
             "maximum": 1000,
             "minimum": 1,
             "type": "integer"
@@ -6973,13 +6878,12 @@
             "type": "integer"
           },
           "symbols": {
-            "description": "ETF 代码列表，如 [\"510300.SH\",\"159915.SZ\"]；支持 .XSHG/.XSHE 长后缀，格式由上游标的解析器校验；单次最多 20 只",
+            "description": "ETF 代码列表，如 [\"510300.SH\",\"159915.SZ\"]；支持 .XSHG/.XSHE 长后缀",
             "items": {
               "maxLength": 256,
               "type": "string"
             },
-            "maxItems": 20,
-            "minItems": 1,
+            "maxItems": 500,
             "type": "array"
           },
           "until_ts_millis": {
@@ -7126,7 +7030,7 @@
     {
       "name": "ft_v2_etf_minutes_batch",
       "title": "市场数据 v2：etf_minutes/batch",
-      "description": "批量查询 ETF 历史分钟 K 线；每只标的独立返回，单次最多 20 只，时间范围最多 30 个自然日。",
+      "description": "批量查询 ETF 历史分钟 K 线；结果为逐根分钟 K 线记录，每条带 `symbol` 字段，同一标的的记录按时间升序；单次最多 20 只，时间范围最多 30 个自然日。",
       "inputSchema": {
         "type": "object",
         "properties": {
@@ -7165,8 +7069,7 @@
               "maxLength": 256,
               "type": "string"
             },
-            "maxItems": 20,
-            "minItems": 1,
+            "maxItems": 500,
             "type": "array"
           },
           "until_ts_millis": {
@@ -7508,7 +7411,7 @@
     {
       "name": "ft_v2_futures_kline_batch",
       "title": "批量期货合约历史K线",
-      "description": "批量查询多个期货合约的历史周期 K 线（日/周/月/季，周/月/季由历史日 K 聚合），含开高低收、成交量额、成交均价、持仓量，结果按时间升序，每个合约独立分组返回。提示：`symbols` 必填且单次最多 20 个，仅支持完整后缀 .SHFE（上海期货交易所）/.INE（上海国际能源交易中心）/.DCE（大连商品交易所）/.CZCE（郑州商品交易所）/.CFFEX（中国金融期货交易所）/.GFEX（广州期货交易所）；`interval` 默认 daily；`start`/`end` 为毫秒时间戳闭区间，`end` 不能单独传入，同时传入时查询范围不能超过 12 个自然月；不传区间时返回每个合约最新数据，`limit` 每合约默认 500，0 按 1 处理。",
+      "description": "批量查询多个期货合约的历史周期 K 线（日/周/月/季，周/月/季由历史日 K 聚合），含开高低收、成交量额、成交均价、持仓量，结果为逐根 K 线记录，每个合约的记录按时间升序，无行情合约不产生记录。提示：`symbols` 必填且单次最多 20 个，仅支持完整后缀 .SHFE（上海期货交易所）/.INE（上海国际能源交易中心）/.DCE（大连商品交易所）/.CZCE（郑州商品交易所）/.CFFEX（中国金融期货交易所）/.GFEX（广州期货交易所）；`interval` 默认 daily；`start`/`end` 为毫秒时间戳闭区间，`end` 不能单独传入，同时传入时查询范围不能超过 12 个自然月；不传区间时返回每个合约最新数据，`limit` 每合约默认 500，0 按 1 处理。",
       "inputSchema": {
         "type": "object",
         "properties": {
@@ -7547,8 +7450,7 @@
               "maxLength": 256,
               "type": "string"
             },
-            "maxItems": 20,
-            "minItems": 1,
+            "maxItems": 500,
             "type": "array"
           }
         },
@@ -7561,7 +7463,7 @@
     {
       "name": "ft_v2_futures_minutes",
       "title": "期货历史分钟K线",
-      "description": "查询期货合约的历史分钟 K 线，支持 1/5/15/30/60 分钟周期，不返回实时分钟数据。提示：`symbol` 与 `symbols` 二选一，批量单次最多 20 个合约，仅支持完整后缀 .SHFE（上海期货交易所）/.INE（上海国际能源交易中心）/.DCE（大连商品交易所）/.CZCE（郑州商品交易所）/.CFFEX（中国金融期货交易所）/.GFEX（广州期货交易所）；`start`/`end` 必填，为毫秒时间戳闭区间，跨度不能超过 3 天（72 小时）；当日数据需在北京时间 16:30 后可查；`interval` 默认 1min；`limit` 缺省 500，范围 1~1000；结果按时间升序。",
+      "description": "查询期货合约的历史分钟 K 线，支持 1/5/15/30/60 分钟周期，不返回实时分钟数据。提示：`symbol` 与 `symbols` 二选一，批量单次最多 20 个合约，仅支持完整后缀 .SHFE（上海期货交易所）/.INE（上海国际能源交易中心）/.DCE（大连商品交易所）/.CZCE（郑州商品交易所）/.CFFEX（中国金融期货交易所）/.GFEX（广州期货交易所）；`start`/`end` 必填，为毫秒时间戳闭区间，跨度不能超过 3 天（72 小时）；当日数据需在北京时间 16:30 后可查；`interval` 默认 1min；`limit` 缺省 500，范围 1~1000；每个合约的记录按时间升序。",
       "inputSchema": {
         "type": "object",
         "properties": {
@@ -7611,8 +7513,7 @@
               "maxLength": 256,
               "type": "string"
             },
-            "maxItems": 20,
-            "minItems": 1,
+            "maxItems": 500,
             "type": "array"
           }
         },
@@ -7677,6 +7578,7 @@
             "type": "integer"
           },
           "since_date": {
+            "description": "起始日期（含），格式 `YYYYMMDD`",
             "maxLength": 4096,
             "type": "string"
           },
@@ -7685,6 +7587,7 @@
             "type": "string"
           },
           "until_date": {
+            "description": "截止日期（含），格式 `YYYYMMDD`",
             "maxLength": 4096,
             "type": "string"
           }
@@ -7758,7 +7661,7 @@
     {
       "name": "ft_v2_index_candlesticks_batch",
       "title": "批量指数K线",
-      "description": "批量获取多条指数的历史周期 K 线（日/周/月/年），返回每条指数的开高低收、成交量额。提示：`symbols`、`interval_unit`、`until_ts_millis` 必填；`symbols` 单次最多 20 只；代码必须带市场后缀（沪深 .SH/.SZ 或 .XSHG/.XSHE，中证指数 .CSI，如 000300.SH、932000.CSI），格式由上游标的解析器校验；指数无除权除息事件，`adjust_kind` 传任意值均等同于 none；分钟 K 线不在本接口（传 `minute` 会被上游拒绝）；`since_ts_millis` 省略时按 `until_ts_millis` 与 `limit` 返回最近 N 根；显式时间范围上限按周期：日 12、周 120、月 360、年 600 个自然月；`limit` 为 1 到 1000，未传 `since_ts_millis` 且未传 `limit` 时上游返回参数错误。",
+      "description": "批量获取多条指数的历史周期 K 线（日/周/月/年），结果为逐根 K 线记录，每条带 `symbol` 字段、开高低收与成交量额，同一标的的记录按时间升序，无行情标的不产生记录。提示：`symbols`、`interval_unit`、`until_ts_millis` 必填，单次最多 20 只；代码必须带市场后缀（沪深 .SH/.SZ 或 .XSHG/.XSHE，中证指数 .CSI，如 000300.SH、932000.CSI）；指数无除权除息事件，`adjust_kind` 传任意值均等同于 none；分钟 K 线不在本接口（传 `minute` 返回参数错误）；`since_ts_millis` 省略时按 `until_ts_millis` 与 `limit` 返回最近 N 根；显式时间范围上限按周期：日 12、周 120、月 360、年 600 个自然月；`limit` 为 1 到 1000，未传 `since_ts_millis` 且未传 `limit` 时返回参数错误。",
       "inputSchema": {
         "type": "object",
         "properties": {
@@ -7788,7 +7691,7 @@
             "type": "string"
           },
           "limit": {
-            "description": "每个标的的返回条数上限，1 到 1000；超出范围上游返回参数错误",
+            "description": "每个标的的返回条数上限，1 到 1000；超出范围返回参数错误",
             "maximum": 1000,
             "minimum": 1,
             "type": "integer"
@@ -7799,13 +7702,12 @@
             "type": "integer"
           },
           "symbols": {
-            "description": "指数代码列表，如 [\"000300.SH\",\"399001.SZ\"]；支持 .XSHG/.XSHE 长后缀与 .CSI 中证指数代码（如 932000.CSI）；单次最多 20 只",
+            "description": "指数代码列表，如 [\"000300.SH\",\"399001.SZ\"]；支持 .XSHG/.XSHE 长后缀与 .CSI 中证指数代码（如 932000.CSI）",
             "items": {
               "maxLength": 256,
               "type": "string"
             },
-            "maxItems": 20,
-            "minItems": 1,
+            "maxItems": 500,
             "type": "array"
           },
           "until_ts_millis": {
@@ -7859,7 +7761,7 @@
             "type": "integer"
           },
           "symbol": {
-            "description": "指数代码，必须带 .SH/.SZ 短后缀",
+            "description": "指数代码，必须带 .SH/.SZ 短后缀或中证指数 .CSI 后缀，如 000300.SH、932000.CSI",
             "maxLength": 4096,
             "type": "string"
           },
@@ -7879,7 +7781,7 @@
     {
       "name": "ft_v2_index_minutes_batch",
       "title": "市场数据 v2：index_minutes/batch",
-      "description": "批量查询 A 股指数历史分钟 K 线；每只标的独立返回，单次最多 20 只，时间范围最多 30 个自然日。",
+      "description": "批量查询 A 股指数历史分钟 K 线；结果为逐根分钟 K 线记录，每条带 `symbol` 字段，同一标的的记录按时间升序；单次最多 20 只，时间范围最多 30 个自然日。",
       "inputSchema": {
         "type": "object",
         "properties": {
@@ -7918,8 +7820,7 @@
               "maxLength": 256,
               "type": "string"
             },
-            "maxItems": 20,
-            "minItems": 1,
+            "maxItems": 500,
             "type": "array"
           },
           "until_ts_millis": {
@@ -8007,7 +7908,7 @@
     {
       "name": "ft_v2_limit_event_timeline_3s",
       "title": "涨跌停事件时间线",
-      "description": "查询个股涨跌停事件 3 秒级时间线。返回每只股票当日的涨跌停时间线：涨停价/跌停价、进入/炸板（涨停）/进入/翘板（跌停）时间点数组、首次封板/最后封板时间、炸板/开板次数、跌停封单资金等。未传 `trade_date`（或传当日）时返回当日实时快照，传历史交易日时返回该交易日的事件时间线。提示：`symbol` 可选，传则查单只；不传返回全市场（已过滤非股票标的）；`trade_date` 为可选参数，格式 `YYYYMMDD`。支持分页；`page/page_size` 可省略，上游缺省 `1/50`，`page_size` 超过 200 按 200 处理。",
+      "description": "查询个股涨跌停事件 3 秒级时间线。返回每只股票当日的涨跌停时间线：涨停价/跌停价、进入/炸板（涨停）/进入/翘板（跌停）时间点数组、首次封板/最后封板时间、炸板/开板次数、跌停封单资金等。未传 `trade_date`（或传当日）时返回当日实时快照，传历史交易日时返回该交易日的事件时间线。提示：`symbol` 可选，传则查单只；不传返回全市场（已过滤非股票标的）；`trade_date` 为可选参数，格式 `YYYYMMDD`。支持分页；`page/page_size` 可省略，缺省 `1/50`，`page_size` 超过 200 按 200 处理。",
       "inputSchema": {
         "type": "object",
         "properties": {
@@ -8241,7 +8142,7 @@
             "type": "integer"
           },
           "page_size": {
-            "description": "每页条数，必填；1 到 500，超出范围上游返回参数错误",
+            "description": "每页条数，必填；1 到 500，超出范围返回参数错误",
             "maximum": 500,
             "minimum": 1,
             "type": "integer"
@@ -8252,11 +8153,9 @@
             "type": "string"
           },
           "stock_code": {
-            "description": "A 股股票代码，支持 6 位纯代码、.SH/.SZ/.BJ 短后缀或 .XSHG/.XSHE/.BJSE 长后缀；MCP 自动规范化",
+            "description": "A 股股票代码，需 6 位代码.大写短后缀且与交易所匹配（如 600519.SH），其它格式返回空数据",
             "examples": [
-              "000001",
-              "000001.SZ",
-              "000001.XSHE"
+              "000001.SZ"
             ],
             "maxLength": 4096,
             "type": "string"
@@ -8333,7 +8232,7 @@
             "type": "integer"
           },
           "stock_code": {
-            "description": "股票代码，选填；支持六位数字（如 600000）、短后缀（600000.SH）和长后缀（600000.XSHG）；不传时查询全市场",
+            "description": "股票代码，选填，需带 .SH/.SZ/.BJ 大写短后缀（如 600000.SH），裸码、长后缀或交易所不匹配时查不到数据；不传时查询全市场",
             "maxLength": 4096,
             "type": "string"
           }
@@ -8472,7 +8371,7 @@
           },
           "page_size": {
             "default": 100,
-            "description": "每页条数；缺省 100，1 到 1000，超出范围上游返回参数错误",
+            "description": "每页条数；缺省 100，1 到 1000，超出范围返回参数错误",
             "maximum": 1000,
             "minimum": 1,
             "type": "integer"
@@ -8512,7 +8411,7 @@
           },
           "page_size": {
             "default": 50,
-            "description": "每页条数；缺省 50，1 到 500，超出范围上游返回参数错误",
+            "description": "每页条数；缺省 50，1 到 500，超出范围返回参数错误",
             "maximum": 500,
             "minimum": 1,
             "type": "integer"
@@ -8557,7 +8456,7 @@
           },
           "page_size": {
             "default": 100,
-            "description": "每页条数；缺省 100，1 到 1000，超出范围上游返回参数错误",
+            "description": "每页条数；缺省 100，1 到 1000，超出范围返回参数错误",
             "maximum": 1000,
             "minimum": 1,
             "type": "integer"
@@ -8602,7 +8501,7 @@
           },
           "page_size": {
             "default": 100,
-            "description": "每页条数；缺省 100，1 到 1000，超出范围上游返回参数错误",
+            "description": "每页条数；缺省 100，1 到 1000，超出范围返回参数错误",
             "maximum": 1000,
             "minimum": 1,
             "type": "integer"
@@ -8630,7 +8529,7 @@
     {
       "name": "ft_v2_stock_candlesticks_batch",
       "title": "批量股票K线",
-      "description": "批量获取多个标的历史 K 线（股票/ETF/指数/债券），返回每个标的的 K 线数组。提示：`symbols`、`interval_unit`、`until_ts_millis` 必填；`symbols` 单次最多 20 只；`since_ts_millis` 与 `limit` 至少填一个；`since_ts_millis` 省略时按 `until_ts_millis` 与 `limit` 返回最近 N 根；显式时间范围上限按周期：日 12、周 120、月 360、年 600 个自然月。",
+      "description": "批量获取多只 A 股股票的历史 K 线（日/周/月/年），结果为逐根 K 线记录，每条带 `symbol` 字段，同一标的的记录按时间升序，无行情标的不产生记录。提示：`symbols`、`interval_unit`、`until_ts_millis` 必填，单次最多 20 只；代码必须带市场后缀（.SH/.SZ/.BJ 或 .XSHG/.XSHE/.BJSE，如 600519.SH、000001.SZ、920002.BJ），裸代码与 ETF、指数等非股票标的返回参数错误；`since_ts_millis` 与 `limit` 至少填一个；`since_ts_millis` 省略时按 `until_ts_millis` 与 `limit` 返回最近 N 根；显式时间范围上限按周期：日 12、周 120、月 360、年 600 个自然月。",
       "inputSchema": {
         "type": "object",
         "properties": {
@@ -8665,7 +8564,7 @@
             "type": "integer"
           },
           "limit": {
-            "description": "每个标的的返回条数上限，1 到 1000；超出范围上游返回参数错误",
+            "description": "每个标的的返回条数上限，1 到 1000；超出范围返回参数错误",
             "maximum": 1000,
             "minimum": 1,
             "type": "integer"
@@ -8676,13 +8575,12 @@
             "type": "integer"
           },
           "symbols": {
-            "description": "标的代码列表，允许股票、ETF、可转债和指数混合，例如 `[\"600519.SH\"，\"510300.SH\"，\"113027.SH\"，\"000300.SH\"]`；单次最多 20 只",
+            "description": "A 股股票代码列表，如 `[\"600519.SH\",\"000001.SZ\",\"920002.BJ\"]`；支持 .XSHG/.XSHE/.BJSE 长后缀",
             "items": {
               "maxLength": 256,
               "type": "string"
             },
-            "maxItems": 20,
-            "minItems": 1,
+            "maxItems": 500,
             "type": "array"
           },
           "until_ts_millis": {
@@ -8908,7 +8806,7 @@
     {
       "name": "ft_v2_stock_minutes_batch",
       "title": "市场数据 v2：stock_minutes/batch",
-      "description": "批量查询 A 股股票历史分钟 K 线；每只标的独立返回，单次最多 20 只，时间范围最多 30 个自然日。",
+      "description": "批量查询 A 股股票历史分钟 K 线；结果为逐根分钟 K 线记录，每条带 `symbol` 字段，同一标的的记录按时间升序；单次最多 20 只，时间范围最多 30 个自然日。",
       "inputSchema": {
         "type": "object",
         "properties": {
@@ -8947,8 +8845,7 @@
               "maxLength": 256,
               "type": "string"
             },
-            "maxItems": 20,
-            "minItems": 1,
+            "maxItems": 500,
             "type": "array"
           },
           "until_ts_millis": {
@@ -8984,7 +8881,7 @@
           },
           "page_size": {
             "default": 50,
-            "description": "每页条数；缺省 50，1 到 200，超出范围上游返回参数错误",
+            "description": "每页条数；缺省 50，1 到 200，超出范围返回参数错误",
             "maximum": 200,
             "minimum": 1,
             "type": "integer"
@@ -9167,7 +9064,7 @@
           },
           "page_size": {
             "default": 50,
-            "description": "每页条数，默认 50，1 到 200，超出范围上游返回参数错误",
+            "description": "每页条数，默认 50，1 到 200，超出范围返回参数错误",
             "maximum": 200,
             "minimum": 1,
             "type": "integer"
@@ -9304,7 +9201,7 @@
           },
           "page_size": {
             "default": 20,
-            "description": "每页条数；缺省 20，1 到 20，超出范围上游返回参数错误",
+            "description": "每页条数；缺省 20，1 到 20，超出范围返回参数错误",
             "maximum": 20,
             "minimum": 1,
             "type": "integer"
@@ -9422,18 +9319,17 @@
     {
       "name": "ft_v4_convertible_bond_realtime_day_kline",
       "title": "可转债实时日K线",
-      "description": "获取 1～20 只可转债当前交易日的实时日 K 线，盘中数据会随行情变化。只接受 `symbols` 数组，不支持指定日期、周期、复权、limit 或分页参数；无可用行情时仍返回对应标的分组，`items` 为空且 `total` 为 0。",
+      "description": "获取 1～20 只可转债当前交易日的实时日 K 线，盘中为进行中的日 K，每个有数据的标的返回 1 条。自动选择交易日：北京时间交易日 09:00 起为当日，09:00 前及非交易日为上一交易日。仅接受可转债标的，传入股票等非可转债标的返回参数错误；价格与成交额字段以字符串返回；无可用行情时不返回该标的的任何记录。",
       "inputSchema": {
         "type": "object",
         "properties": {
           "symbols": {
-            "description": "可转债代码数组，如 [\"113042.SH\",\"123107.SZ\"]",
+            "description": "可转债代码列表，如 [\"113042.SH\",\"123107.SZ\"]；支持 .SH/.XSHG、.SZ/.XSHE 后缀或六位裸代码；单次 1 至 20 个",
             "items": {
               "maxLength": 256,
               "type": "string"
             },
-            "maxItems": 20,
-            "minItems": 1,
+            "maxItems": 500,
             "type": "array"
           }
         },
@@ -9446,18 +9342,17 @@
     {
       "name": "ft_v4_convertible_bond_realtime_minute_kline",
       "title": "可转债实时分钟K线",
-      "description": "获取 1～20 只可转债当前交易日的实时 1 分钟 K 线。只接受 `symbols` 数组，不支持指定历史日期、周期、复权、limit 或分页参数；无可用行情时仍返回对应标的分组，`items` 为空且 `total` 为 0。",
+      "description": "获取 1～20 只可转债当前交易日的实时 1 分钟 K 线。自动选择交易日：北京时间交易日 09:00 起为当日，09:00 前及非交易日为上一交易日。仅接受可转债标的，传入股票等非可转债标的返回参数错误；不支持指定历史日期、周期、复权或返回条数；无可用行情时不返回该标的的任何记录；价格与成交额字段以字符串返回。",
       "inputSchema": {
         "type": "object",
         "properties": {
           "symbols": {
-            "description": "可转债代码数组，如 [\"113042.SH\",\"123107.SZ\"]",
+            "description": "可转债代码列表，如 [\"113042.SH\",\"123107.SZ\"]；支持 .SH/.XSHG、.SZ/.XSHE 后缀或六位裸代码；单次 1 至 20 个",
             "items": {
               "maxLength": 256,
               "type": "string"
             },
-            "maxItems": 20,
-            "minItems": 1,
+            "maxItems": 500,
             "type": "array"
           }
         },
@@ -9529,18 +9424,17 @@
     {
       "name": "ft_v4_etf_realtime_day_kline",
       "title": "ETF实时日K线",
-      "description": "批量获取 ETF 当前交易日实时日 K 线。",
+      "description": "批量获取 ETF 当前交易日的实时日 K 线，返回截至最新行情时刻的行情数据，不限制标的数量。仅接受 ETF 标的，传入股票、指数或其他非 ETF 标的返回参数错误；支持 `.SH`/`.XSHG`、`.SZ`/`.XSHE`、`.BJ`/`.BJSE` 后缀或六位裸代码；固定返回当前交易日日 K，不支持指定历史日期、时间范围、周期、复权方式或返回条数；标的无当日行情时不返回该标的的任何记录。",
       "inputSchema": {
         "type": "object",
         "properties": {
           "symbols": {
-            "description": "ETF 代码数组",
+            "description": "ETF 代码列表，如 [\"510300.SH\",\"159915.SZ\"]；支持 .SH/.XSHG、.SZ/.XSHE、.BJ/.BJSE 后缀或六位裸代码；不限制数量",
             "items": {
               "maxLength": 256,
               "type": "string"
             },
             "maxItems": 500,
-            "minItems": 1,
             "type": "array"
           }
         },
@@ -9553,18 +9447,17 @@
     {
       "name": "ft_v4_etf_realtime_minute_kline",
       "title": "ETF实时分钟K线",
-      "description": "批量获取 ETF 当前交易日实时 1 分钟 K 线。",
+      "description": "批量获取 ETF 当前交易日的实时 1 分钟 K 线，单次最多 20 个标的。仅接受 ETF 标的，传入股票、指数或其他非 ETF 标的返回参数错误；支持 `.SH`/`.XSHG`、`.SZ`/`.XSHE`、`.BJ`/`.BJSE` 后缀或六位裸代码；固定返回 1 分钟 K 线，不支持指定日期、时间范围、周期、复权方式或返回条数；标的无当日行情时不返回该标的的任何记录。",
       "inputSchema": {
         "type": "object",
         "properties": {
           "symbols": {
-            "description": "ETF 代码数组",
+            "description": "ETF 代码列表，如 [\"510300.SH\",\"159915.SZ\"]；支持 .SH/.XSHG、.SZ/.XSHE、.BJ/.BJSE 后缀或六位裸代码；单次 1 至 20 个",
             "items": {
               "maxLength": 256,
               "type": "string"
             },
-            "maxItems": 20,
-            "minItems": 1,
+            "maxItems": 500,
             "type": "array"
           }
         },
@@ -9577,7 +9470,7 @@
     {
       "name": "ft_v4_futures_minutes_realtime",
       "title": "期货实时分钟K线",
-      "description": "批量查询期货合约当前交易日的实时 1 分钟 K 线，每合约返回当日全部记录。提示：`symbols` 必填且单次最多 20 个，仅支持完整后缀 .SHFE（上海期货交易所）/.INE（上海国际能源交易中心）/.DCE（大连商品交易所）/.CZCE（郑州商品交易所）/.CFFEX（中国金融期货交易所）/.GFEX（广州期货交易所）；仅接受 `symbols`，不支持周期、时间区间、条数或分页参数；北京时间 21:00 后请求归属下一交易日（夜盘）；当日无行情的合约返回空分组。",
+      "description": "批量查询期货合约当前交易日的实时 1 分钟 K 线，每合约返回当日全部记录。提示：`symbols` 必填且单次最多 20 个，仅支持完整后缀 .SHFE（上海期货交易所）/.INE（上海国际能源交易中心）/.DCE（大连商品交易所）/.CZCE（郑州商品交易所）/.CFFEX（中国金融期货交易所）/.GFEX（广州期货交易所）；仅接受 `symbols`，不支持周期、时间区间、条数或分页参数；北京时间 21:00 后请求归属下一交易日（夜盘）；当日无行情的合约不返回任何记录。",
       "inputSchema": {
         "type": "object",
         "properties": {
@@ -9587,8 +9480,7 @@
               "maxLength": 256,
               "type": "string"
             },
-            "maxItems": 20,
-            "minItems": 1,
+            "maxItems": 500,
             "type": "array"
           }
         },
@@ -9601,7 +9493,7 @@
     {
       "name": "ft_v4_futures_realtime_day_kline",
       "title": "期货实时日K线",
-      "description": "批量查询期货合约当前交易日的实时日 K 线（由实时 1 分钟 K 线聚合），含开高低收、成交量额、成交均价、持仓量，每合约通常返回 0 或 1 条。提示：`symbols` 必填且单次最多 20 个，仅支持完整后缀 .SHFE（上海期货交易所）/.INE（上海国际能源交易中心）/.DCE（大连商品交易所）/.CZCE（郑州商品交易所）/.CFFEX（中国金融期货交易所）/.GFEX（广州期货交易所）；仅接受 `symbols`，不支持其他参数；北京时间 21:00 后请求归属下一交易日（夜盘）；当日无行情的合约返回空分组。",
+      "description": "批量查询期货合约当前交易日的实时日 K 线（由实时 1 分钟 K 线聚合），含开高低收、成交量额、成交均价、持仓量，每合约通常返回 0 或 1 条。提示：`symbols` 必填且单次最多 20 个，仅支持完整后缀 .SHFE（上海期货交易所）/.INE（上海国际能源交易中心）/.DCE（大连商品交易所）/.CZCE（郑州商品交易所）/.CFFEX（中国金融期货交易所）/.GFEX（广州期货交易所）；仅接受 `symbols`，不支持其他参数；北京时间 21:00 后请求归属下一交易日（夜盘）；当日无行情的合约不返回任何记录。",
       "inputSchema": {
         "type": "object",
         "properties": {
@@ -9611,8 +9503,7 @@
               "maxLength": 256,
               "type": "string"
             },
-            "maxItems": 20,
-            "minItems": 1,
+            "maxItems": 500,
             "type": "array"
           }
         },
@@ -9625,18 +9516,17 @@
     {
       "name": "ft_v4_index_realtime_day_kline",
       "title": "指数实时日K线",
-      "description": "批量获取指数当前交易日实时日 K 线。",
+      "description": "批量获取指数当前交易日的实时日 K 线，返回截至最新行情时刻的行情数据，不限制标的数量。仅接受指数标的，传入股票、ETF 或其他非指数标的返回参数错误；支持 `.SH`/`.XSHG`、`.SZ`/`.XSHE`、`.BJ`/`.BJSE`、`.CSI` 后缀或六位裸代码；固定返回当前交易日日 K，不支持指定历史日期、时间范围、周期、复权方式或返回条数；标的无当日行情时不返回该标的的任何记录。",
       "inputSchema": {
         "type": "object",
         "properties": {
           "symbols": {
-            "description": "指数代码数组",
+            "description": "指数代码列表，如 [\"000300.CSI\",\"000905.CSI\"]；支持 .SH/.XSHG、.SZ/.XSHE、.BJ/.BJSE、.CSI 后缀或六位裸代码；不限制数量",
             "items": {
               "maxLength": 256,
               "type": "string"
             },
             "maxItems": 500,
-            "minItems": 1,
             "type": "array"
           }
         },
@@ -9649,18 +9539,17 @@
     {
       "name": "ft_v4_index_realtime_minute_kline",
       "title": "指数实时分钟K线",
-      "description": "批量获取指数当前交易日实时 1 分钟 K 线。",
+      "description": "批量获取指数当前交易日的实时 1 分钟 K 线，单次最多 20 个标的。仅接受指数标的，传入股票、ETF 或其他非指数标的返回参数错误；支持 `.SH`/`.XSHG`、`.SZ`/`.XSHE`、`.BJ`/`.BJSE`、`.CSI` 后缀或六位裸代码；固定返回 1 分钟 K 线，不支持指定日期、时间范围、周期、复权方式或返回条数；标的无当日行情时不返回该标的的任何记录。",
       "inputSchema": {
         "type": "object",
         "properties": {
           "symbols": {
-            "description": "指数代码数组",
+            "description": "指数代码列表，如 [\"000300.CSI\",\"000905.CSI\"]；支持 .SH/.XSHG、.SZ/.XSHE、.BJ/.BJSE、.CSI 后缀或六位裸代码；单次 1 至 20 个",
             "items": {
               "maxLength": 256,
               "type": "string"
             },
-            "maxItems": 20,
-            "minItems": 1,
+            "maxItems": 500,
             "type": "array"
           }
         },
@@ -9713,18 +9602,17 @@
     {
       "name": "ft_v4_stock_realtime_day_kline",
       "title": "股票实时日K线",
-      "description": "批量获取股票当前交易日实时日 K 线。",
+      "description": "批量获取股票当前交易日的实时日 K 线，返回截至最新行情时刻的开高低收、成交量额与换手率，不限制标的数量。支持 `.SH`/`.XSHG`、`.SZ`/`.XSHE`、`.BJ`/`.BJSE` 后缀或六位裸代码；固定返回当前交易日日 K，不支持指定历史日期、时间范围、周期、复权方式或返回条数；标的无当日行情时不返回该标的的任何记录。",
       "inputSchema": {
         "type": "object",
         "properties": {
           "symbols": {
-            "description": "股票代码数组",
+            "description": "股票代码列表，如 [\"600519.SH\",\"000001.SZ\"]；支持 .SH/.XSHG、.SZ/.XSHE、.BJ/.BJSE 后缀或六位裸代码；不限制数量",
             "items": {
               "maxLength": 256,
               "type": "string"
             },
             "maxItems": 500,
-            "minItems": 1,
             "type": "array"
           }
         },
@@ -9737,18 +9625,17 @@
     {
       "name": "ft_v4_stock_realtime_minute_kline",
       "title": "股票实时分钟K线",
-      "description": "批量获取股票当前交易日实时 1 分钟 K 线。",
+      "description": "批量获取股票当前交易日的实时 1 分钟 K 线，单次最多 20 个标的。支持 `.SH`/`.XSHG`、`.SZ`/`.XSHE`、`.BJ`/`.BJSE` 后缀或六位裸代码；固定返回 1 分钟 K 线，不支持指定日期、时间范围、周期、复权方式或返回条数；标的无当日行情时不返回该标的的任何记录。",
       "inputSchema": {
         "type": "object",
         "properties": {
           "symbols": {
-            "description": "股票代码数组",
+            "description": "股票代码列表，如 [\"600519.SH\",\"000001.SZ\"]；支持 .SH/.XSHG、.SZ/.XSHE、.BJ/.BJSE 后缀或六位裸代码；单次 1 至 20 个",
             "items": {
               "maxLength": 256,
               "type": "string"
             },
-            "maxItems": 20,
-            "minItems": 1,
+            "maxItems": 500,
             "type": "array"
           }
         },
