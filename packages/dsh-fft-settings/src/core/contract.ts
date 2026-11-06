@@ -10,13 +10,36 @@ export type { SettingsRpcMethod, SettingsRpcMethods } from './rpc-core.js'
 /** Protocol version of the settings route and envelope. */
 export const FTSHARE_SETTINGS_API_VERSION = 1 as const
 /**
+ * Section label per interface language.
+ *
+ * Resolved on every read, not at module load: the host re-reads the label
+ * thunk per render, so the nav row follows a language change without the
+ * plugin reloading. Only the nav-row label is localized — the section is
+ * reached before any of this plugin's own UI renders, so it has to read
+ * correctly in the host's language; card copy stays single-language.
+ * @returns the section name in the active interface language.
+ */
+export function settingsSectionLabel(): string {
+  // `navigator` is absent in the Node half and in tests: those get English.
+  const tag = typeof navigator === 'undefined' ? '' : navigator.language
+  return tag.toLowerCase().startsWith('zh') ? '金融终端' : 'FT Terminal'
+}
+/**
  * Identity of the settings section that carries this plugin's cards.
  *
  * The id replaces the old `ftshare`. The label is a neutral product name, not
  * the internal brand: the page ships publicly, and the data source it
  * integrates is named inside the cards instead.
+ *
+ * The label is a thunk so the nav row follows the active locale without
+ * re-registering. The host re-reads it per render through `resolveSlotLabel`;
+ * a plain string would freeze whatever language was active at registration.
  */
-export const FTSHARE_SETTINGS_SECTION = { id: 'dsh-fft', order: 120, label: '金融终端' } as const
+export const FTSHARE_SETTINGS_SECTION = {
+  id: 'dsh-fft',
+  order: 120,
+  label: settingsSectionLabel,
+} as const
 /**
  * Child slot of {@link FTSHARE_SETTINGS_SECTION} that carries its cards.
  *
@@ -25,6 +48,14 @@ export const FTSHARE_SETTINGS_SECTION = { id: 'dsh-fft', order: 120, label: '金
  * `order` (ascending, default 100) decides the card's position.
  */
 export const FTSHARE_SETTINGS_CARD_SLOT = 'ftshare.settings.card' as const
+/**
+ * Nav-row icon slot declared by the host, addressed by the matching section id.
+ *
+ * Introduced in DSH 0.2.2; on 0.2.1 the slot does not exist and the host keeps
+ * its built-in gear for this section. Registration id must equal
+ * {@link FTSHARE_SETTINGS_SECTION}.id, or the host filters the icon out.
+ */
+export const FTSHARE_SETTINGS_ICON_SLOT = 'settings.section.icon' as const
 /**
  * Browser-facing route for this plugin's settings calls.
  *
