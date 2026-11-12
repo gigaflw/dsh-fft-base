@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState, useSyncExternalStore, type ReactNode } from 'react'
-import { FTSHARE_API_KEY_REF, FTSHARE_CREDENTIAL_EVENTS, type SubscribeChanges, type ApiKeyPublicApi } from './contract.js'
+import { FTSHARE_API_KEY_APPLY_URL, FTSHARE_API_KEY_REF, FTSHARE_CREDENTIAL_EVENTS, type SubscribeChanges, type ApiKeyPublicApi } from './contract.js'
 import { FTSHARE_SETTINGS_CARD_SLOT } from '../../core/contract.js'
 import { FtshareSettingsModel } from './model.js'
 import { createApiKeyClient } from './client-api.js'
@@ -60,7 +60,7 @@ export function ApiKeyCard({ api, subscribeChanges }: { readonly api: ApiKeyPubl
         <button type="button" onClick={() => void model.testConnection()} disabled={busy || !status}>测试当前连接</button>
         <button type="button" onClick={() => void model.clear()} disabled={disabled || !status?.configured}>清除已保存密钥</button>
         <button type="button" onClick={() => void model.refresh()} disabled={busy} title="重新读取已保存的配置和上次检测结果，不会发起联网检测">重新读取状态</button>
-        <a href="https://ftai.chat/me/profile?tab=api-key" target="_blank" rel="noreferrer">获取 API Key ↗</a>
+        <a href={FTSHARE_API_KEY_APPLY_URL} target="_blank" rel="noreferrer">获取 API Key ↗</a>
       </div>
       {draft && <small>“测试当前连接”使用已生效的密钥，不测试输入框内尚未保存的内容。</small>}
       {busy && <p role="status">正在处理，请稍候…</p>}

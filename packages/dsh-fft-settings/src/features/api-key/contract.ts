@@ -8,6 +8,19 @@
  * every consumer.
  */
 export const FTSHARE_API_KEY_REF = 'FTSHARE_API_KEY' as const
+/**
+ * 申请／购买 API Key 的页面。`utm_source=dsh-fft` 标记来源为本插件，站点据此归因；
+ * 卡片与一次性提示共用这一条地址，不要在别处另写一份。
+ */
+export const FTSHARE_API_KEY_APPLY_URL = 'https://ftai.chat/me/profile?tab=api-key&utm_source=dsh-fft' as const
+/**
+ * 设备级「已看过免费 Key 提示」标记的 localStorage 键。
+ *
+ * 带版本号：改一次文案就把版本加一，让所有用户重新看一次，不需要让用户清缓存。
+ * 设备级语义（重启、升级都保留，跨 workspace／窗口共享）由桌面版主窗口的
+ * `dsh-app://app/` origin 私有存储提供，不写宿主的配置文件。
+ */
+export const FREE_KEY_NOTICE_STORAGE_KEY = 'dsh-fft.free-key-notice.v1' as const
 export const FTSHARE_CREDENTIAL_EVENTS = ['credentials/reference-updated'] as const
 export const API_KEY_METHODS = ['describe', 'set', 'clear', 'configureAndTest', 'testConnection', 'getValidationStatus'] as const
 export type ApiKeyMethod = typeof API_KEY_METHODS[number]

@@ -7,12 +7,13 @@
 // 的注册与渲染位置，而不是自造的注册表。
 
 import assert from 'node:assert/strict'
+import { readFile } from 'node:fs/promises'
 import { test } from 'node:test'
 import { SlotCore } from '@deepseek-ai/dsh-client-ui-slots'
 import { registerSettingsSection } from '../lib/core/shell.js'
 import { registerApiKeyCard } from '../lib/features/api-key/card.js'
 import { registerLogsCard } from '../lib/features/logs/card.js'
-import { FTSHARE_API_KEY_REF, FTSHARE_SETTINGS_CARD_SLOT, FTSHARE_SETTINGS_SECTION, LOGS_CARD_ID, LOGS_CARD_ORDER } from '../lib/contract.js'
+import { FTSHARE_API_KEY_APPLY_URL, FTSHARE_API_KEY_REF, FTSHARE_SETTINGS_CARD_SLOT, FTSHARE_SETTINGS_SECTION, LOGS_CARD_ID, LOGS_CARD_ORDER } from '../lib/contract.js'
 
 /** Renderer-shaped slots service over a real SlotCore. */
 function createSlots() {
@@ -169,4 +170,19 @@ test('both built-in cards register through the same slot and sort by ascending o
   assert.deepEqual(slots.core.entriesOfSlot(FTSHARE_SETTINGS_CARD_SLOT).map(entry => entry.options.id), ['apiKey'])
   disposeApiKey()
   disposeSection()
+})
+
+test('the API Key apply link carries the dsh-fft attribution and lives in one constant', async () => {
+  const url = new URL(FTSHARE_API_KEY_APPLY_URL)
+  assert.equal(url.origin + url.pathname, 'https://ftai.chat/me/profile')
+  assert.equal(url.searchParams.get('tab'), 'api-key')
+  // The site attributes the referrer from this pair; losing it silently breaks
+  // the funnel, so it is pinned here rather than left to the page URL.
+  assert.equal(url.searchParams.get('utm_source'), 'dsh-fft')
+
+  // The card must reach the address through the constant: a second literal URL
+  // is how the attribution drifts apart from the settings page.
+  const source = await readFile(new URL('../src/features/api-key/card.tsx', import.meta.url), 'utf8')
+  assert.doesNotMatch(source, /ftai\.chat/)
+  assert.match(source, /href=\{FTSHARE_API_KEY_APPLY_URL\}/)
 })
