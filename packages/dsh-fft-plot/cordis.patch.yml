@@ -1,0 +1,14 @@
+# dsh-fft-plot bundle patch
+#
+# `dsh.bundle.patch` layer: installing this package —
+#
+#   dsh plugin --profile <name> add @dsh-ft/dsh-fft-plot
+#
+# — appends this single `insert` to the bundle stack.
+#
+# The row only needs the skill registry. The plotting scripts run on the DSH
+# bundled Python (standard library only), so the row must not declare an
+# FTShare settings service or any credentials handle.
+- insert:
+    - id: dsh-fft-plot
+      name: '@dsh-ft/dsh-fft-plot'
