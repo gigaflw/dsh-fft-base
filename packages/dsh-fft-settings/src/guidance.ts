@@ -45,7 +45,12 @@ export const FT_SECTION_ORDERS = { services: 6, dataPolicy: 7 } as const
 /** Order of the credential fact — `getContextOrder` owns only three named positions. */
 export const FT_CREDENTIALS_ORDER = 130
 
-export const FT_SERVICES_TEXT = '行情、K线与指标用 dsh-kline 工具（代码先用 search_symbols 解析）；投研报告与组合推荐用 cockpit_* 工具；因子入库与评价用 factor-intake-standard 技能；FTShare API Key 在设置页维护。'
+/**
+ * The capability list. It may only name tools this base actually ships or that
+ * the FT preset actually mounts: a promise about a tool that is not installed
+ * sends the model hunting for something that does not exist.
+ */
+export const FT_SERVICES_TEXT = '行情、K线与指标用 dsh-kline 工具（代码先用 search_symbols 解析）；FTShare 数据用 ftshare_* 工具，可用接口查 ftshare_status；FTShare API Key 在设置页维护。'
 
 export const FT_DATA_POLICY_TEXT = '金融数据优先取 FTShare，其次才用联网检索补充；引用必须给出处与时点；严格区分已披露事实、机构判断与待验证信息；不编造数字，也不构成投资建议。'
 

@@ -72,11 +72,17 @@ test('ships an ./agent entry that resolves to a built file', async () => {
   )
 })
 
-test('keeps both texts inside their prompt budget and names the tools they promise', async () => {
+test('keeps both texts inside their prompt budget and names only shipped tools', async () => {
   // 两段是每次请求都要付的固定成本；超预算说明该搬进 skill。
   assert.ok(FT_SERVICES_TEXT.length <= 130, `FT_SERVICES_TEXT is ${FT_SERVICES_TEXT.length} chars`)
-  for (const token of ['dsh-kline', 'search_symbols', 'cockpit_', 'factor-intake-standard', '设置页']) {
+  // 只点名本底座或 FT preset 真的挂上的能力。
+  for (const token of ['dsh-kline', 'search_symbols', 'ftshare_', '设置页']) {
     assert.ok(FT_SERVICES_TEXT.includes(token), `FT_SERVICES_TEXT must name ${token}`)
+  }
+  // 这些能力已从组合包下掉（投研舱与因子入库改由独立仓承载），点名它们会让模型
+  // 去找一个装不上的工具。回归防护放在这里，不是“忘删”的问题。
+  for (const token of ['cockpit_', 'factor-intake']) {
+    assert.ok(!FT_SERVICES_TEXT.includes(token), `FT_SERVICES_TEXT must not name ${token}: the FT preset no longer mounts it`)
   }
   assert.ok(FT_DATA_POLICY_TEXT.length <= 80, `FT_DATA_POLICY_TEXT is ${FT_DATA_POLICY_TEXT.length} chars`)
   for (const token of ['FTShare', '投资建议']) {
