@@ -4099,6 +4099,48 @@
       }
     },
     {
+      "name": "ft_v1_index_fut_depth",
+      "title": "股指期货与指数深度行情",
+      "description": "查询股指期货深度快照、对应指数价格与标的映射，返回 `count`（期货合约数）、`futures`（各合约的交易日、品种、交割合约、到期日、剩余交易日数、价格、成交量、持仓量、对应指数点位、基差与分红调整基差等）、`index`（指数价格列表，`price_full` 为正式点位并用于基差计算，`price_quick` 为快速点位，仅用于辅助观察、不参与基差计算）、`instrument_map`（期货与指数标的映射，只返回一份：对应当次返回 `futures` 的最大交易日，`futures` 为空时对应 `index` 的最大交易日）。历史数据自 20261030 起；无分页，全量返回。提示：不传日期参数时查询最新交易日；`trade_date` 与 `start_date`/`end_date` 互斥，`start_date` 与 `end_date` 必须成对提供，`end_date` 不得早于 `start_date`，区间按自然月最长 3 年；日期格式仅支持 YYYYMMDD，日期参数传空值或全空白值返回 400，未知参数返回参数错误；`code_prefix` 大小写不敏感，仅筛选 `futures` 与 `instrument_map.fut_info`，`index` 与 `instrument_map.index_info` 不按品种过滤。",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "code_prefix": {
+            "description": "股指期货品种筛选，支持 IF/IC/IM/IH，大小写不敏感；不传返回全部品种，空值或白名单外取值返回参数错误；仅筛选 `futures` 与 `instrument_map.fut_info`，`index` 与 `instrument_map.index_info` 不按品种过滤",
+            "enum": [
+              "IF",
+              "IC",
+              "IM",
+              "IH",
+              "if",
+              "ic",
+              "im",
+              "ih"
+            ],
+            "maxLength": 4096,
+            "type": "string"
+          },
+          "end_date": {
+            "description": "历史区间结束交易日，格式 YYYYMMDD；必须与 start_date 成对提供，不能早于 start_date，区间按自然月最长 3 年，不能传空值",
+            "maxLength": 4096,
+            "type": "string"
+          },
+          "start_date": {
+            "description": "历史区间起始交易日，格式 YYYYMMDD；必须与 end_date 成对提供，不能传空值",
+            "maxLength": 4096,
+            "type": "string"
+          },
+          "trade_date": {
+            "description": "单日查询日期，格式 YYYYMMDD；与 start_date/end_date 互斥，不能传空值",
+            "maxLength": 4096,
+            "type": "string"
+          }
+        },
+        "required": [],
+        "additionalProperties": false
+      }
+    },
+    {
       "name": "ft_v1_index_index_description",
       "title": "中证指数描述列表",
       "description": "分页查询中证系列指数的描述信息，返回指数代码、指数名称、来源机构、指数简介和文档标识。提示：支持通过 `page` 和 `page_size` 分页。需要文件本体时，取记录的 `url_hash` 调用 `ft_v1_index_index_description_download` 获取公网下载信息。",
@@ -4568,6 +4610,32 @@
         "required": [
           "query"
         ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "ft_v1_sge_spot_description_all",
+      "title": "上金所现货品种",
+      "description": "查询上海黄金交易所现货及延期品种主档列表，返回品种代码（如 AG9999.SGEX，含交易所后缀）、品种类型（响应字段名为 `type`）、中文简称、上市与下架日期、T+N 交易日限制、官网交易时间原文（下架品种为 null）、合约乘数（统一按克，白银品种已按官网千克口径折算）、保证金率（小数，现货实盘全额交易为 1.0）、每手最小交易单位、品种分类、官网代码（如 Au(T+D)）、涨跌停板百分比、最小变动价位、报价单位与交收规则。品种主档快照随官网更新，每天 17:30 更新；共 19 只品种（17 只活跃、2 只已下架），无分页，一次返回全部。提示：`category` 选填，取值 `spot_full`（现货实盘）/`spot_forward`（现货即期）/`spot_deferred`（现货延期交收），白名单外取值返回参数错误；`active_only` 为 `true` 时仅返回活跃品种（下架日期为 null），缺省或 `false` 返回全部品种（含已下架）；两参数可组合使用，返回按品种代码升序；`limit_pct`、`min_move`、`quote_unit`、`settle_rule` 为官网独有字段，缺失时为 null，已下架品种均缺失；交易所会在节假日前后调整保证金率与涨跌停板，返回值为最近一次更新的口径。",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "active_only": {
+            "description": "true 仅返回活跃品种（下架日期为 null）；缺省或 false 返回全部品种（含已下架）",
+            "type": "boolean"
+          },
+          "category": {
+            "description": "品种分类筛选：spot_full（现货实盘）/ spot_forward（现货即期）/ spot_deferred（现货延期交收）；缺省返回全部分类，白名单外取值返回参数错误",
+            "enum": [
+              "spot_full",
+              "spot_forward",
+              "spot_deferred"
+            ],
+            "maxLength": 4096,
+            "type": "string"
+          }
+        },
+        "required": [],
         "additionalProperties": false
       }
     },
@@ -6413,6 +6481,171 @@
             ]
           }
         ]
+      }
+    },
+    {
+      "name": "ft_v2_announcements_market_announcement_download",
+      "title": "全市场公告文件下载信息",
+      "description": "返回全市场公告文件下载信息的公网下载信息（download_url、filename、content_type、curl 示例），不返回文件内容。全市场公告文件的 url_hash（64 位小写十六进制 sha256），来自 ft_v2_announcements_market_announcements 列表的 url_hash 字段。。下载须携带请求头 FTSHARE_API_KEY: <你的 API Key>；key 从 https://ftai.chat/me/profile 获取，建议先在环境中设置 FTSHARE_API_KEY 再执行示例命令。",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "url_hash": {
+            "description": "全市场公告文件的 url_hash（64 位小写十六进制 sha256），来自 ft_v2_announcements_market_announcements 列表的 url_hash 字段。",
+            "maxLength": 256,
+            "minLength": 1,
+            "pattern": "^[0-9a-f]{64}$",
+            "type": "string"
+          }
+        },
+        "required": [
+          "url_hash"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "ft_v2_announcements_market_announcements",
+      "title": "全市场公告列表",
+      "description": "查询全市场上市公司公告列表，返回股票代码（统一 .SH/.SZ/.BJ 短后缀）、股票名称、公告标题、披露时间（北京时间，格式 YYYY-MM-DD HH:MM:SS）、分类数组、板块、栏目与 `url_hash`（公告原文文件下载标识）。支持按关键字、公告分类、时间窗、股票代码、板块、栏目过滤，条件全部可选、自由组合；不传条件时返回全量公告，按公告时间倒序排列。公告披露时间自 2026-01-01 起；无匹配记录时返回空结果，不是请求失败。提示：`keyword` 按公告标题子串匹配，去首尾空格后最长 60 字符，超出返回 400，`%` 与 `_` 按字面量处理不作通配符；`category`/`plate`/`column_type` 均为逗号分隔多选，任一命中即返回，允许值见各参数说明；`start_date`/`end_date` 格式 YYYYMMDD，均不传时默认查询近 3 年滚动窗口，仅传 `start_date` 时查询该单日，`end_date` 不能单独提供；`page`/`page_size` 可省略，默认 1/20，`page_size` 最大 500，越界返回参数错误。需要文件本体时，取记录的 `url_hash` 调用 `ft_v2_announcements_market_announcement_download` 获取公网下载信息。",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "category": {
+            "description": "公告分类，逗号分隔多选，任一命中即返回，白名单外取值返回 400；22 个允许值：annual、semi_annual、q1、q3、earnings_forecast、daily_operations、board、shareholders_meeting、governance、intermediary、related_transaction、major_restructuring、issuance、equity_change、dividend、borrowing_credit、convertible_bond、major_contract、risk_warning、hedging、independent_director、other_financing",
+            "maxLength": 4096,
+            "type": "string"
+          },
+          "column_type": {
+            "description": "栏目，逗号分隔多选，任一命中即返回，白名单外取值返回 400；取值 stock、hke、fund、bond，当前仅 stock 栏目有数据",
+            "maxLength": 4096,
+            "type": "string"
+          },
+          "end_date": {
+            "description": "披露结束日期，格式 YYYYMMDD；不能单独提供，须与 start_date 成对使用，且不能早于 start_date",
+            "maxLength": 4096,
+            "type": "string"
+          },
+          "keyword": {
+            "description": "公告标题关键字，子串匹配；去首尾空格后最长 60 字符，超出返回 400；% 与 _ 按字面量处理，不作通配符",
+            "maxLength": 4096,
+            "type": "string"
+          },
+          "page": {
+            "default": 1,
+            "description": "页码，从 1 开始，默认 1；0 返回参数错误",
+            "minimum": 1,
+            "type": "integer"
+          },
+          "page_size": {
+            "default": 20,
+            "description": "每页条数；缺省 20，1 到 500，超出范围返回参数错误",
+            "maximum": 500,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "plate": {
+            "description": "板块，逗号分隔多选，任一命中即返回，白名单外取值返回 400；取值 sh（上海主板）、sz（深圳主板）、sz_chi_next（创业板）、sh_star（科创板）、bj（北交所）",
+            "maxLength": 4096,
+            "type": "string"
+          },
+          "start_date": {
+            "description": "披露起始日期，格式 YYYYMMDD；与 end_date 均不传时默认查询近 3 年滚动窗口；仅传本参数时查询该单日",
+            "maxLength": 4096,
+            "type": "string"
+          },
+          "stock_code": {
+            "description": "股票代码：支持 6 位裸代码（000001）、短后缀（000001.SH/.SZ/.BJ）、长后缀（000001.XSHG/.XSHE/.BJSE）与冒号格式（SZ:000001），市场后缀大小写不敏感",
+            "examples": [
+              "000001.SZ"
+            ],
+            "maxLength": 4096,
+            "type": "string"
+          }
+        },
+        "required": [],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "ft_v2_announcements_periodic_report_download",
+      "title": "定期报告文件下载信息",
+      "description": "返回定期报告文件下载信息的公网下载信息（download_url、filename、content_type、curl 示例），不返回文件内容。定期报告文件的 url_hash（64 位小写十六进制 sha256），来自 ft_v2_announcements_periodic_reports 列表的 url_hash 字段。。下载须携带请求头 FTSHARE_API_KEY: <你的 API Key>；key 从 https://ftai.chat/me/profile 获取，建议先在环境中设置 FTSHARE_API_KEY 再执行示例命令。",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "url_hash": {
+            "description": "定期报告文件的 url_hash（64 位小写十六进制 sha256），来自 ft_v2_announcements_periodic_reports 列表的 url_hash 字段。",
+            "maxLength": 256,
+            "minLength": 1,
+            "pattern": "^[0-9a-f]{64}$",
+            "type": "string"
+          }
+        },
+        "required": [
+          "url_hash"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "ft_v2_announcements_periodic_reports",
+      "title": "定期报告列表",
+      "description": "查询上市公司定期报告（年报、半年报、一季报、三季报）列表，返回股票代码（统一 .SH/.SZ/.BJ 短后缀）、股票名称、报告年份、报告类型、文件版本（full/summary/english）、版本标识（original 原文 / revised 修订后 / corrected 更正后）、标题、披露日期与 `url_hash`（报告原文文件下载标识）。同一报告的原文与更正、修订版全部返回，不做仅最新版过滤，按报告年份倒序、股票代码升序排列，同一报告各版本相邻且最新披露在前；条件全部可选、自由组合。报告年份 1999 年起，披露日期最早 2000-01-18；无匹配记录时返回空结果，不是请求失败。提示：`stock_code` 不支持冒号格式，传入返回 400；`report_type` 缺省返回全部四类；`document_variant` 当前数据均为 `full`；`page`/`page_size` 可省略，默认 1/20，`page_size` 最大 500，越界返回参数错误。需要文件本体时，取记录的 `url_hash` 调用 `ft_v2_announcements_periodic_report_download` 获取公网下载信息。",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "document_variant": {
+            "description": "文件版本：full（全文）/ summary（摘要）/ english（英文）；白名单外取值返回参数错误；当前数据均为 full",
+            "enum": [
+              "full",
+              "summary",
+              "english"
+            ],
+            "maxLength": 4096,
+            "type": "string"
+          },
+          "page": {
+            "default": 1,
+            "description": "页码，从 1 开始，默认 1；0 返回参数错误",
+            "minimum": 1,
+            "type": "integer"
+          },
+          "page_size": {
+            "default": 20,
+            "description": "每页条数；缺省 20，1 到 500，超出范围返回参数错误",
+            "maximum": 500,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "report_type": {
+            "description": "报告类型：annual（年报）/ semi_annual（半年报）/ q1（一季报）/ q3（三季报）；白名单外取值返回参数错误，不传返回全部四类",
+            "enum": [
+              "annual",
+              "semi_annual",
+              "q1",
+              "q3"
+            ],
+            "maxLength": 4096,
+            "type": "string"
+          },
+          "report_year": {
+            "description": "报告所属年份，如 2025；非数字或超出 0～65535 范围返回参数错误",
+            "maximum": 65535,
+            "minimum": 0,
+            "type": "integer"
+          },
+          "stock_code": {
+            "description": "股票代码：支持 6 位裸代码（000001）、短后缀（000001.SH/.SZ/.BJ）与长后缀（000001.XSHG/.XSHE/.BJSE），市场后缀大小写不敏感；不支持冒号格式（如 SZ:000001），传入返回 400",
+            "examples": [
+              "000001.SZ"
+            ],
+            "maxLength": 4096,
+            "type": "string"
+          }
+        },
+        "required": [],
+        "additionalProperties": false
       }
     },
     {

@@ -1,7 +1,7 @@
 {
-  "count": 250,
-  "generatedAt": "2026-11-05T09:41:45.018Z",
+  "count": 256,
+  "generatedAt": "2026-11-13T05:29:12.649Z",
   "endpoint": "https://market.ft.tech/gateway/mcp",
-  "catalogBytes": 364984,
-  "indexBytes": 22819
+  "catalogBytes": 379886,
+  "indexBytes": 23462
 }

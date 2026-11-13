@@ -6,6 +6,7 @@
  * 并且 `denied`/`failed` 各自带上照抄上游的 notice。
  */
 import assert from 'node:assert/strict'
+import { readFileSync } from 'node:fs'
 import { createFtshareDataService, normalizeRows, observePayload } from '../lib/index.js'
 import { classifyFailure, permissionNoticeFromPayload } from '../lib/errors.js'
 
@@ -260,7 +261,10 @@ console.log('ftshareData.call: four-state normalization, positive empty evidence
   assert.ok(statusTool, '要有失败现场入口')
   const statusValue = await statusTool.execute({}, { signal: undefined })
   assert.ok(statusValue.text.includes('FTShare 失败聚合'))
-  assert.ok(statusValue.text.includes('目录：随包 250 条'), '要给出随包目录规模')
+  // Read the count from the shipped metadata: a literal here turns every catalog
+  // refresh into an unrelated test failure.
+  const shippedCount = JSON.parse(readFileSync(new URL('../catalog.meta.json', import.meta.url), 'utf8')).count
+  assert.ok(statusValue.text.includes(`目录：随包 ${shippedCount} 条`), '要给出随包目录规模')
 }
 
 console.log('provider plane: provide ftshareData, credentials deferred to settings; tools plane: 8 ftshare_* tools plus ftshare_call and ftshare_status, four states in the body passed')

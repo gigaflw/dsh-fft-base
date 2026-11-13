@@ -97,7 +97,7 @@ function register(ctx: Context, entry: Capability): void {
 /**
  * 注册通用直调：`ftshare_call(interface, args)`。
  *
- * 它是长尾接口的唯一入口——一个工具定义换掉 250 份 schema。三种结局各有各的话：
+ * 它是长尾接口的唯一入口——一个工具定义换掉整本目录的 schema。三种结局各有各的话：
  * 名字不在目录（给出索引文件路径，让模型去 `grep`，而不是猜第二个名字）、套餐无权
  * （由 {@link renderCallResult} 带上升级入口）、上游原文（由 notice 直传）。
  * @param ctx - preset 子树的上下文。
