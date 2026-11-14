@@ -33,7 +33,7 @@ scripts/publish-if-new.mjs   发版脚本：按依赖序发布版本号未变的
 - `CHANGELOG.md` 每段写清本仓 tag 与三个包各自的版本，CI 只发布版本号没在 registry 上出现过的包。
 - 发版：改版本 + CHANGELOG → `pnpm build && pnpm test` → 提交 `release: vX.Y.Z` → 打 tag → 推 tag。
 - 认证走 **npm OIDC trusted publishing**（GitHub Actions `id-token: write`），不需要任何 npm token。
-- **不要设 `NPM_CONFIG_PROVENANCE`**：本仓是私有仓库，私有源仓无法生成 provenance，打开会直接失败。
+- **`NPM_CONFIG_PROVENANCE` 必须开启**：本仓是公开仓库，npm 可为构建产物出具 provenance；关掉它 CI 仍能发布但产物没有来源证明。
 - 不要建 GitHub Release：本仓只做 npm 发布。
 
 ## 开发

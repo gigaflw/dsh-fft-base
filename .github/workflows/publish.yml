@@ -5,10 +5,8 @@ name: publish
 # npm yet (settings and ftshare version independently; the tag is the
 # repository's release number, not a package version).
 #
-# Authentication is npm trusted publishing over OIDC — no token secret. This
-# workflow deliberately does NOT set NPM_CONFIG_PROVENANCE: the source repository
-# is private and npm cannot attest a private repository, so enabling provenance
-# would fail the publish outright.
+# Authentication is npm trusted publishing over OIDC — no token secret. The
+# source repository is public, so npm can attest the build: provenance is on.
 
 on:
   push:
@@ -50,4 +48,6 @@ jobs:
         run: pnpm -r build && pnpm -r test
 
       - name: Publish the versions npm does not have yet
+        env:
+          NPM_CONFIG_PROVENANCE: true
         run: node scripts/publish-if-new.mjs
