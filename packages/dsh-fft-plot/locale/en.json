@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "FT Plot",
+    "description": "Render FTShare query results as inline SVG charts."
+  }
+}
