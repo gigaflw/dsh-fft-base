@@ -1,6 +1,6 @@
 {
   "name": "@dsh-ft/dsh-fft-plot",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "FTShare data plotting for DeepSeek Harness: a bundled skill that renders query results into inline SVG charts with zero third-party dependencies.",
   "license": "MIT",
   "author": "Ben <ben@ft.tech>",

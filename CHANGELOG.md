@@ -7,6 +7,25 @@
 每个版本段在 `### Packages` 里列出本次实际发布的包版本。CI 只发布版本号尚未出现在
 registry 上的包，因此「没改的包不出现在本段」等价于「它没有新版本」。
 
+## [1.4.1] - 2026-11-14
+
+`plot` 发布 0.1.1：补上显示元数据（中文「FT 绘图」/英文「FT Plot」）与 npm 仓库链接，插件管理与
+组合包工作台卡据此显示可读名称。仓库自本版起转为公开，发布产物带 npm provenance。
+
+### Packages
+
+- `@dsh-ft/dsh-fft-plot` 0.1.1
+
+### Added
+
+- `plot` 的 locale 元数据：`locale/zh.json` / `locale/en.json`，并加入 `exports` 与 `files`，
+  宿主可在不执行插件代码的情况下读取标题与一句话说明。
+- npm 元数据补齐 `author` / `homepage` / `repository` / `bugs`，npm 页面与 DSH 插件页可以指回本仓。
+
+### Note
+
+- 纯元数据改动：不新增依赖、不改运行代码，旧版本安装行为不变。
+
 ## [1.4.0] - 2026-11-13
 
 `settings` 的浏览器半开始向 K 线发布可选宿主契约 `klineHost`：bundle 自己提供图表入口和首启体验，
