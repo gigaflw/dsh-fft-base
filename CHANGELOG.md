@@ -7,6 +7,28 @@
 每个版本段在 `### Packages` 里列出本次实际发布的包版本。CI 只发布版本号尚未出现在
 registry 上的包，因此「没改的包不出现在本段」等价于「它没有新版本」。
 
+## [1.4.2] - 2026-11-16
+
+`settings` 与 `ftshare` 的申请 Key / 升级套餐入口统一改为 FTShare 落地页，并补上完整的 UTM 归因
+参数（来源 / 媒介 / 计划）。`plot` 本次没有改动，不出现在本节。
+
+### Packages
+
+- `@dsh-ft/dsh-fft-settings` 0.7.2
+- `@dsh-ft/dsh-fft-ftshare` 0.4.3
+
+### Changed
+
+- 两处入口（设置页「获取 API Key」卡与左下角免费 Key 提示、403 拒绝时的升级入口）不再指向需要
+  登录的 `/me/profile?tab=…`，改为申请与升级同页的 `https://ftai.chat/ftshare`。
+- 入口链接带完整归因三件套 `utm_source=dsh-fft&utm_medium=AI&utm_campaign=dsh`：此前只带来源，
+  站点后台的来源、媒介、计划三个维度里只能看到第一个。
+- 契约注释写明三件套口径；测试锁定域名、路径与三个参数，后续改动丢掉参数会直接失败。
+
+### Note
+
+- 不新增依赖，`engines.dsh` 下限不变；已发布版本的安装行为与 API 不变，仅入口 URL 与归因参数变化。
+
 ## [1.4.1] - 2026-11-14
 
 `plot` 发布 0.1.1：补上显示元数据（中文「FT 绘图」/英文「FT Plot」）与 npm 仓库链接，插件管理与

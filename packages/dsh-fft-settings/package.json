@@ -1,6 +1,6 @@
 {
   "name": "@dsh-ft/dsh-fft-settings",
-  "version": "0.7.1",
+  "version": "0.7.2",
   "description": "FT 设置与凭据底座：FTShare API Key、设置页卡片、运行日志与品牌主题层，供 FT 系列插件共享。",
   "license": "MIT",
   "homepage": "https://github.com/gigaflw/dsh-fft-base/tree/dev/packages/dsh-fft-settings#readme",
