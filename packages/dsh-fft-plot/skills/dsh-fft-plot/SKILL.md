@@ -25,8 +25,13 @@ description: 把 FTShare 接口返回的数据渲染成图，图直接显示在�
 4. **不适用的情形不画**：数据为空、只有一条记录、纯名录字段、或用户只要一个数字。
    这时直接说结论，不要为了出图而出图。
 5. **不编造数字**。图上每个数字都必须来自 `rows`。
+6. **产物必须是带完整根属性的独立 SVG**：`xmlns`、`width`、`height`、`viewBox` 四者齐全。
+   `viewBox` 只定义坐标系，**不提供内在尺寸**；缺 `width`/`height` 时，`![](x.svg)` 在多数
+   Markdown 渲染器里会塌成 0 高——对方只看到空白，而你自己用浏览器直接打开文件却是正常的，
+   所以这个错误**自测发现不了**。`plot.py` 会自动写全这四个属性；手写或二次加工 SVG 时
+   必须自己补，并且跑一次 `scripts/check_svg.py`。
 
-## 三步
+## 四步
 
 ### 1. 判断该不该画
 
@@ -52,6 +57,16 @@ python3 <skill目录>/scripts/plot.py --spec /abs/spec.json --out /abs/chart.svg
 ```
 
 spec 是 **JSON**（不是 YAML）。数据少就内联 `rows`，多就写 `data` 指向 json 文件。
+
+### 4. 校验产物
+
+```bash
+python3 <skill目录>/scripts/check_svg.py /abs/chart.svg
+```
+
+必须 PASS。它查四件事：根元素 `xmlns`/`width`/`height`/`viewBox` 是否齐全且为正、
+`viewBox` 与 `width`/`height` 的宽高比是否一致（不一致 `<img>` 里会变形）、
+正文是否混入外部引用（离线会加载失败）。
 
 ## spec 结构
 
@@ -136,6 +151,26 @@ spec 是 **JSON**（不是 YAML）。数据少就内联 `rows`，多就写 `data
 
 `paper`（米白+朱红墨蓝，默认）、`poster`（纯白+亮橙）、`slate`（冷灰+青红）。
 所有主题都是浅色底：SVG 内联进聊天时读不到宿主的深色模式，浅色底保证永不错色。
+
+## 手写 SVG：允许，但必须补齐四个根属性
+
+`plot.py` 覆盖不到的复合图——双 panel 对照、带信息框的散点/轨迹、自定义标注层——
+可以直接生成 SVG。此时根元素必须是：
+
+```
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="540"
+     viewBox="0 0 960 540" role="img" aria-label="一句话把这张图读出来">
+```
+
+- **四个属性一个都不能少**，缺哪个坏哪条路：缺 `xmlns` → 文件当独立文档打开解析失败；
+  缺 `width`/`height` → 作为 `<img>` 引用塌成空白。两种症状不同，都只能靠校验抓。
+- `width`/`height` 用纯数字，且与 `viewBox` 同比例，否则 `<img>` 里会被拉伸。
+- 自绘也要用浅色底打底（`<rect fill>`），理由同「配色」一节。
+- 生成后**必须**过 `check_svg.py`；不要用「浏览器打开看着正常」代替校验。
+- 图上每个数字同样受第 5 条约束：来自数据，不来自手写常量。
+
+反例（真实踩过）：一份 960×540 的轨迹图只写了 `viewBox`，本地 Chrome 打开完全正常，
+发到聊天里是空白；补上 `width="960" height="540"` 后立刻显示。
 
 ## 新增图型
 
