@@ -9,10 +9,11 @@
  */
 export const FTSHARE_API_KEY_REF = 'FTSHARE_API_KEY' as const
 /**
- * 申请／购买 API Key 的页面。`utm_source=dsh-fft` 标记来源为本插件，站点据此归因；
+ * 申请／购买 API Key 的 FTShare 落地页（申请与升级同页）。`utm_*` 三件套固定为
+ * 来源 dsh-fft、媒介 AI、计划 dsh：站点按这三个维度归因，缺一项就少一个维度；
  * 卡片与一次性提示共用这一条地址，不要在别处另写一份。
  */
-export const FTSHARE_API_KEY_APPLY_URL = 'https://ftai.chat/me/profile?tab=api-key&utm_source=dsh-fft' as const
+export const FTSHARE_API_KEY_APPLY_URL = 'https://ftai.chat/ftshare?utm_source=dsh-fft&utm_medium=AI&utm_campaign=dsh' as const
 /**
  * 设备级「已看过免费 Key 提示」标记的 localStorage 键。
  *

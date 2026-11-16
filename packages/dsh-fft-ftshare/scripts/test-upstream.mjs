@@ -12,7 +12,7 @@
 import assert from 'node:assert/strict'
 import { readdirSync, readFileSync } from 'node:fs'
 
-import { createFtshareDataService } from '../lib/index.js'
+import { FTSHARE_UPGRADE_URL, createFtshareDataService } from '../lib/index.js'
 import { classifyFailure, fingerprintOf, permissionNoticeFromPayload } from '../lib/errors.js'
 import { createFailureStore, shippedCatalogSummary } from '../lib/status.js'
 
@@ -68,7 +68,7 @@ async function assertFixture(fixture) {
     assert.equal(result.notice?.retryable, expect.retryable, `${fixture.name}: retryable`)
   }
   if (expect.upgradeUrl === true) {
-    assert.ok(result.notice?.upgradeUrl?.includes('subscription'), `${fixture.name}: denied 带升级入口`)
+    assert.equal(result.notice?.upgradeUrl, FTSHARE_UPGRADE_URL, `${fixture.name}: denied 带升级入口`)
   }
   if (expect.upgradeUrl === false) {
     assert.equal(result.notice?.upgradeUrl, undefined, `${fixture.name}: 401 不挂订阅页`)

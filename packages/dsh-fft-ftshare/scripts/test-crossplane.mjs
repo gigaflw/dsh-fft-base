@@ -10,7 +10,7 @@ import { readFileSync } from 'node:fs'
 
 import { createFtshareClient } from '../lib/client.js'
 import { asCatalog } from '../lib/catalog.js'
-import { FTSHARE_DATA_ROUTE } from '../lib/contract.js'
+import { FTSHARE_DATA_ROUTE, FTSHARE_UPGRADE_URL } from '../lib/contract.js'
 import { createFtshareRoute } from '../lib/route.js'
 
 const catalog = asCatalog(JSON.parse(readFileSync(new URL('../catalog.json', import.meta.url), 'utf8')))
@@ -66,7 +66,7 @@ function bridge(script) {
         code: 'UPSTREAM_PERMISSION_DENIED',
         message: '上游原文：当前套餐无权访问该接口',
         requiredPlan: 'Basic',
-        upgradeUrl: 'https://ftai.chat/me/profile?tab=subscription',
+        upgradeUrl: FTSHARE_UPGRADE_URL,
         retryable: false,
         upstream: { raw: '{"error":{"code":"UPSTREAM_PERMISSION_DENIED","upstream_code":403}}', status: 403, fingerprint: '0123456789abcdef' },
       },
@@ -98,7 +98,7 @@ function bridge(script) {
   const denied = await client.call('ft_v1_eastmoney_stock_valuation', { symbol: '600519.SH' })
   assert.equal(denied.state, 'denied')
   assert.equal(denied.ok, false)
-  assert.equal(denied.notice.upgradeUrl, 'https://ftai.chat/me/profile?tab=subscription', '升级入口必须一起过桥')
+  assert.equal(denied.notice.upgradeUrl, FTSHARE_UPGRADE_URL, '升级入口必须一起过桥')
   assert.equal(denied.notice.requiredPlan, 'Basic', '档位必须一起过桥')
   assert.equal(denied.notice.retryable, false)
   assert.equal(denied.notice.upstream.status, 403, '上游状态必须一起过桥')

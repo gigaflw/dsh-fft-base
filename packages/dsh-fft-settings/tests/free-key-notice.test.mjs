@@ -106,6 +106,8 @@ test('the notice is registered on the frame-wide overlay, not inside the setting
 
 test('the notice link matches the settings card so one funnel sees both entries', () => {
   const url = new URL(FTSHARE_API_KEY_APPLY_URL)
+  assert.equal(url.origin + url.pathname, 'https://ftai.chat/ftshare')
   assert.equal(url.searchParams.get('utm_source'), 'dsh-fft')
-  assert.equal(url.searchParams.get('tab'), 'api-key')
+  assert.equal(url.searchParams.get('utm_medium'), 'AI')
+  assert.equal(url.searchParams.get('utm_campaign'), 'dsh')
 })

@@ -7,8 +7,18 @@
  */
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
-import { createFtshareDataService, normalizeRows, observePayload } from '../lib/index.js'
+import { FTSHARE_UPGRADE_URL, createFtshareDataService, normalizeRows, observePayload } from '../lib/index.js'
 import { classifyFailure, permissionNoticeFromPayload } from '../lib/errors.js'
+
+// 升级入口：FTShare 落地页 + UTM 三件套；缺任一项站点就少一个归因维度。
+{
+  const url = new URL(FTSHARE_UPGRADE_URL)
+  assert.equal(url.origin + url.pathname, 'https://ftai.chat/ftshare')
+  assert.equal(url.searchParams.get('utm_source'), 'dsh-fft')
+  assert.equal(url.searchParams.get('utm_medium'), 'AI')
+  assert.equal(url.searchParams.get('utm_campaign'), 'dsh')
+  assert.equal(url.searchParams.has('tab'), false)
+}
 
 /** 造一个按脚本作答的假 transport。 */
 function stubTransport(script, options = {}) {
@@ -89,7 +99,7 @@ function envelopeOf(code, message, extra = {}) {
   assert.equal(result.notice.upstream.status, 403)
   assert.equal(result.notice.retryable, false)
   assert.equal(result.notice.requiredPlan, undefined, '上游没给档位就不写')
-  assert.ok(result.notice.upgradeUrl.includes('subscription'))
+  assert.equal(result.notice.upgradeUrl, FTSHARE_UPGRADE_URL, '升级入口指向 FTShare 落地页并带来源标记')
   assert.ok(result.notice.message.startsWith('上游原文：'))
   assert.ok(result.notice.upstream.raw.includes('UPSTREAM_PERMISSION_DENIED'))
 }
@@ -224,7 +234,7 @@ console.log('ftshareData.call: four-state normalization, positive empty evidence
             code: 'UPSTREAM_PERMISSION_DENIED',
             message: '上游原文：当前套餐无权访问该接口',
             requiredPlan: 'Advanced',
-            upgradeUrl: 'https://ftai.chat/me/profile?tab=subscription',
+            upgradeUrl: FTSHARE_UPGRADE_URL,
             retryable: false,
             upstream: { raw: '{"error":{"code":"UPSTREAM_PERMISSION_DENIED","upstream_code":403}}', status: 403, fingerprint: '0123456789abcdef' },
           },

@@ -189,11 +189,14 @@ test('both built-in cards register through the same slot and sort by ascending o
 
 test('the API Key apply link carries the dsh-fft attribution and lives in one constant', async () => {
   const url = new URL(FTSHARE_API_KEY_APPLY_URL)
-  assert.equal(url.origin + url.pathname, 'https://ftai.chat/me/profile')
-  assert.equal(url.searchParams.get('tab'), 'api-key')
-  // The site attributes the referrer from this pair; losing it silently breaks
-  // the funnel, so it is pinned here rather than left to the page URL.
+  assert.equal(url.origin + url.pathname, 'https://ftai.chat/ftshare')
+  // The site attributes source / medium / campaign from these three; losing any
+  // one silently drops a reporting dimension, so they are pinned here rather
+  // than left to the page URL.
   assert.equal(url.searchParams.get('utm_source'), 'dsh-fft')
+  assert.equal(url.searchParams.get('utm_medium'), 'AI')
+  assert.equal(url.searchParams.get('utm_campaign'), 'dsh')
+  assert.equal(url.searchParams.has('tab'), false)
 
   // The card must reach the address through the constant: a second literal URL
   // is how the attribution drifts apart from the settings page.

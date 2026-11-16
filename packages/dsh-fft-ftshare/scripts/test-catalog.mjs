@@ -9,6 +9,7 @@ import { fileURLToPath } from 'node:url'
 
 import { FTSHARE_CAPABILITIES } from '../lib/capabilities.js'
 import { asCatalog, catalogEntryOf, missingRequiredArgs } from '../lib/catalog.js'
+import { FTSHARE_UPGRADE_URL } from '../lib/contract.js'
 import { renderArtifacts, renderIndex, toCatalogEntries } from './build-catalog.mjs'
 
 const packageRoot = new URL('..', import.meta.url)
@@ -77,7 +78,7 @@ assert.ok(meta.count >= 250, `目录条目数应覆盖上游全量，实际 ${me
   const registered = []
   const calls = []
   const noticeOf = state => state === 'denied'
-    ? { code: 'UPSTREAM_PERMISSION_DENIED', message: '上游原文：当前套餐无权访问该接口', upgradeUrl: 'https://ftai.chat/me/profile?tab=subscription', retryable: false, upstream: { raw: '{"error":{"code":"UPSTREAM_PERMISSION_DENIED","upstream_code":403}}', status: 403, fingerprint: '0123456789abcdef' } }
+    ? { code: 'UPSTREAM_PERMISSION_DENIED', message: '上游原文：当前套餐无权访问该接口', upgradeUrl: FTSHARE_UPGRADE_URL, retryable: false, upstream: { raw: '{"error":{"code":"UPSTREAM_PERMISSION_DENIED","upstream_code":403}}', status: 403, fingerprint: '0123456789abcdef' } }
     : { code: 'UPSTREAM_UNAVAILABLE', message: '上游原文：最近 1 天最多访问 500 次；请等待后再试', retryable: true, upstream: { raw: '{"error":{"code":"UPSTREAM_UNAVAILABLE","upstream_code":429}}', status: 429, fingerprint: 'fedcba9876543210' } }
   const toolCtx = {
     logger: () => ({ warn: () => {} }),

@@ -25,10 +25,11 @@ export const FTSHARE_DATA_SERVICE = 'ftshareData' as const
 export const FTSHARE_DATA_ROUTE = '/api/ftshare-data' as const
 
 /**
- * 用户可升级订阅的页面，{@link FtshareNotice.upgradeUrl} 的默认值（仅 `denied` 带）。
- * `utm_source=dsh-fft` 与申请页同口径：站点据此把「从插件来的购买」和自然流量分开。
+ * FTShare 落地页（申请 Key 与升级套餐同页），{@link FtshareNotice.upgradeUrl} 的默认值
+ * （仅 `denied` 带）。`utm_*` 三件套与设置页入口同口径（来源 dsh-fft、媒介 AI、
+ * 计划 dsh）：站点据此把「从插件来的访问」和自然流量分开。
  */
-export const FTSHARE_UPGRADE_URL = 'https://ftai.chat/me/profile?tab=subscription&utm_source=dsh-fft' as const
+export const FTSHARE_UPGRADE_URL = 'https://ftai.chat/ftshare?utm_source=dsh-fft&utm_medium=AI&utm_campaign=dsh' as const
 
 /**
  * 一次取数的四态结局。
