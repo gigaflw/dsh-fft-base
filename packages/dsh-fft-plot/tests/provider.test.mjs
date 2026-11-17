@@ -30,6 +30,9 @@ test('candidate satisfies the skill registry contract', () => {
   // The catalog truncates at 500 characters; a longer description would be cut
   // mid-sentence in the model-facing list.
   assert.ok(CANDIDATE.description.length <= 500, 'description must fit the catalog budget')
+  // The catalog has to make inline drawing the default before the body loads.
+  assert.match(CANDIDATE.description, /默认用本技能/u)
+  assert.match(CANDIDATE.description, /直接在对话里出图/u)
 })
 
 test('resourceBase points at the bundled skill directory', () => {
@@ -38,6 +41,8 @@ test('resourceBase points at the bundled skill directory', () => {
   // Both files the skill needs at runtime have to travel with the package.
   assert.ok(readFileSync(join(RESOURCE_BASE.path, 'SKILL.md'), 'utf8').includes('# dsh-fft-plot'))
   assert.ok(readFileSync(join(RESOURCE_BASE.path, 'scripts/plot.py'), 'utf8').includes('def main('))
+  // The body keeps the same inline-by-default rule after the skill loads.
+  assert.match(readFileSync(join(RESOURCE_BASE.path, 'SKILL.md'), 'utf8'), /默认直接出图/u)
 })
 
 test('frontmatter is stripped and the runtime note names no external toolchain', async () => {
