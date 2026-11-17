@@ -7,6 +7,31 @@
 每个版本段在 `### Packages` 里列出本次实际发布的包版本。CI 只发布版本号尚未出现在
 registry 上的包，因此「没改的包不出现在本段」等价于「它没有新版本」。
 
+## [1.5.0] - 2026-11-17
+
+`plot` 发布 0.2.0：新增热力图、矩形树图、瀑布图、事件时间轴与产业链示意图；出图默认在对话内直出，只有用户明确要求在 K 线图上画图时才交给 K 线工具。`settings` 与 `ftshare` 本次没有改动。
+
+### Packages
+
+- `@dsh-ft/dsh-fft-plot` 0.2.0
+
+### Added
+
+- 绘图 skill 新增热力图、矩形树图、瀑布图、事件时间轴与产业链示意图；`table` 增加 sparkline 列。
+- 图表支持写到 `.dsh/plots` 并按内容哈希命名；新增 `--tokens` 输出色板与图型目录，主题增加 A 股红涨绿跌。
+- 新增 9 个可渲染样例与 9 个错误样例，覆盖新图型、非法数值与放不下的示意图。
+
+### Changed
+
+- 要图时默认在对话里直接出内联图，不再先问用户；只有明确要求画在 K 线图上时才使用 K 线的绘图工具。
+- 图例、说明与页脚按实际折行高度布局，长说明不再溢出画布；日期与数值轴格式按数据自动适配。
+- 校验改用 `check_svg.py`，不再用 qlmanage 等方式转 PNG 验证。
+
+### Fixed
+
+- 手写的独立 SVG 缺少 `width` / `height` 时，作为 `<img>` 嵌入会塌成 0 高；现在要求根属性齐全并显式校验。
+- 缺列、NaN/Infinity、越界坐标与放不下的示意图改为明确报错，不再静默画错。
+
 ## [1.4.2] - 2026-11-16
 
 `settings` 与 `ftshare` 的申请 Key / 升级套餐入口统一改为 FTShare 落地页，并补上完整的 UTM 归因
@@ -179,3 +204,4 @@ registry 上的包，因此「没改的包不出现在本段」等价于「它�
 [1.2.0]: https://github.com/gigaflw/dsh-fft-base/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/gigaflw/dsh-fft-base/compare/v0.1.0...v1.1.0
 [0.1.0]: https://github.com/gigaflw/dsh-fft-base/releases/tag/v0.1.0
+[1.5.0]: https://github.com/gigaflw/dsh-fft-base/compare/v1.4.2...v1.5.0
