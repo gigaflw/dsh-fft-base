@@ -9,17 +9,64 @@
   中文字体由 `font-family` 回退链解析——SVG 在 `<img>` 里是独立文档，继承不到宿主字体。
 - **不依赖任何第三方包**：没有 matplotlib、没有 numpy。
 """
+import datetime
 import math
 import os
+import re
 
 from .theme import FONT_STACK
+
+#: XML 1.0 不允许的控制字符。上游数据偶尔带进来，转义层必须清掉：
+#: 它们不会报错，但写出的文件不是合法 XML，浏览器打开是空白。
+_INVALID_XML = re.compile('[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]')
+_HEX = re.compile(r'^#([0-9a-fA-F]{6})$')
 
 
 # ---------------------------------------------------------------- 基础工具
 
 def esc(s):
-    """转义 XML 文本内容。"""
-    return (str(s).replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;'))
+    """转义 XML 文本内容，并剔除 XML 不允许的控制字符。"""
+    text = _INVALID_XML.sub('', str(s))
+    return text.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;')
+
+
+def _rgb(color):
+    """`#RRGGBB` → (r, g, b)；非法值退回中灰。"""
+    match = _HEX.match(str(color))
+    if not match:
+        return (128, 128, 128)
+    value = int(match.group(1), 16)
+    return ((value >> 16) & 0xff, (value >> 8) & 0xff, value & 0xff)
+
+
+def mix_hex(start, end, ratio):
+    """在两个 `#RRGGBB` 之间线性插值，ratio=0 取 start、1 取 end。
+
+    热力图/示意图需要按数值强度调色，而 SVG 的 `fill` 只能是具体颜色；
+    在生成期算好插值，比给每个格子叠一层透明度更可控（叠透明度会露出底纹）。
+    """
+    ratio = min(max(float(ratio), 0.0), 1.0)
+    sr, sg, sb = _rgb(start)
+    er, eg, eb = _rgb(end)
+    return '#{:02X}{:02X}{:02X}'.format(
+        round(sr + (er - sr) * ratio),
+        round(sg + (eg - sg) * ratio),
+        round(sb + (eb - sb) * ratio),
+    )
+
+
+def relative_luminance(color):
+    """WCAG 相对亮度，用来决定块上的文字用深色还是浅色。"""
+    channels = []
+    for value in _rgb(color):
+        channel = value / 255
+        channels.append(channel / 12.92 if channel <= 0.03928 else ((channel + 0.055) / 1.055) ** 2.4)
+    return 0.2126 * channels[0] + 0.7152 * channels[1] + 0.0722 * channels[2]
+
+
+def contrast_ink(background, dark, light):
+    """在给定底色上选可读的文字色：深底用浅字、浅底用深字。"""
+    return dark if relative_luminance(background) > 0.45 else light
 
 
 def nice_ticks(lo, hi, target=5):
@@ -41,33 +88,81 @@ def nice_ticks(lo, hi, target=5):
     return out
 
 
+#: 上游日期一律按上海时区解释；不能用机器本地时区，否则跨时区会错一天。
+_SHANGHAI = datetime.timezone(datetime.timedelta(hours=8))
+_ISO_DATE = re.compile(r'^(\d{4})-(\d{1,2})-(\d{1,2})')
+_CN_DATE = re.compile(r'^(\d{4})年(\d{1,2})月')
+
+
+def date_parts(raw):
+    """把常见时间写法收敛成 `(year, month, day)`；无法识别返回 None。
+
+    支持（SKILL.md「数据形状的坑」列的五种形态）：
+    `20260810`、`2026-08-10`、`2026-09-30 00:00:00`、毫秒/秒/纳秒时间戳、
+    `2026年09月份`。只有年月时 day 为 None。
+    """
+    text = str(raw).strip()
+    digits = ''.join(ch for ch in text if ch.isdigit())
+    if not digits:
+        return None
+    # 时间戳：纯数字且量级像 1973–2286 年，按秒/毫秒/微秒/纳秒识别
+    if text.lstrip('-').isdigit():
+        stamp = int(digits)
+        length = len(digits)
+        if length == 10 and 10 ** 8 <= stamp < 10 ** 10:
+            moment = datetime.datetime.fromtimestamp(stamp, _SHANGHAI)
+            return (moment.year, moment.month, moment.day)
+        if length == 13 and 10 ** 11 <= stamp < 10 ** 13:
+            moment = datetime.datetime.fromtimestamp(stamp / 1e3, _SHANGHAI)
+            return (moment.year, moment.month, moment.day)
+        if length == 16 and 10 ** 14 <= stamp < 10 ** 16:
+            moment = datetime.datetime.fromtimestamp(stamp / 1e6, _SHANGHAI)
+            return (moment.year, moment.month, moment.day)
+        if length == 19 and 10 ** 17 <= stamp < 10 ** 19:
+            moment = datetime.datetime.fromtimestamp(stamp / 1e9, _SHANGHAI)
+            return (moment.year, moment.month, moment.day)
+    if len(digits) == 8 and text[:4].isdigit():
+        year, month, day = int(digits[:4]), int(digits[4:6]), int(digits[6:8])
+        if 1900 <= year <= 2200 and 1 <= month <= 12 and 1 <= day <= 31:
+            return (year, month, day)
+    iso = _ISO_DATE.match(text)
+    if iso:
+        return (int(iso.group(1)), int(iso.group(2)), int(iso.group(3)))
+    cn = _CN_DATE.match(text)
+    if cn:
+        return (int(cn.group(1)), int(cn.group(2)), None)
+    if len(digits) == 6 and len(text) <= 10:      # 202609 -> 年月
+        year, month = int(digits[:4]), int(digits[4:6])
+        if 1900 <= year <= 2200 and 1 <= month <= 12:
+            return (year, month, None)
+    return None
+
+
 def fmt_date_label(raw, compact=True):
     """把返回里常见的日期写法收敛成短标签。
 
     上游日期有五种互不兼容形态（`20260810`、`2026-08-10`、`2026-09-30 00:00:00`、
     毫秒/纳秒时间戳、`2026年09月份`），8 位数字直接当轴标签既挤又难读。
-    `compact=True` 时同一年内只留「月-日」，跨年时保留年份。
+    `compact=True` 时只留「月-日」，跨年时保留年份；认不出的值原样返回。
     """
-    text = str(raw).strip()
-    digits = ''.join(ch for ch in text if ch.isdigit())
-    if len(digits) == 8 and text[:4].isdigit():
-        year, month, day = digits[:4], digits[4:6], digits[6:8]
-        return f'{month}-{day}' if compact else f'{year}-{month}-{day}'
-    if len(digits) == 6 and len(text) <= 7:      # 202609 -> 年月
-        return f'{digits[:4]}-{digits[4:6]}'
-    # `2026-09-30 00:00:00` 之类：去掉时间部分
-    if ' ' in text and len(text.split(' ')[0]) == 10:
-        return text.split(' ')[0] if not compact else text[5:10]
-    return text
+    parts = date_parts(raw)
+    if parts is None:
+        return str(raw)
+    year, month, day = parts
+    if day is None:
+        return f'{year:04d}-{month:02d}'
+    if compact:
+        return f'{month:02d}-{day:02d}'
+    return f'{year:04d}-{month:02d}-{day:02d}'
 
 
 def has_multiple_years(values):
     """判断一组日期标签是否跨年——跨年就不能只写月-日。"""
     years = set()
     for raw in values:
-        digits = ''.join(ch for ch in str(raw) if ch.isdigit())
-        if len(digits) >= 6 and str(raw).strip()[:4].isdigit():
-            years.add(digits[:4])
+        parts = date_parts(raw)
+        if parts is not None:
+            years.add(parts[0])
     return len(years) > 1
 
 
@@ -161,12 +256,16 @@ class Svg:
 
     # ---- 图元 ----
 
-    def rect(self, x, y, w, h, fill, rx=0, opacity=None):
+    def rect(self, x, y, w, h, fill, rx=0, opacity=None, stroke=None, stroke_width=1, dash=None):
         attrs = f'x="{x:.2f}" y="{y:.2f}" width="{max(w, 0):.2f}" height="{max(h, 0):.2f}"'
         if rx:
             attrs += f' rx="{rx}"'
         if opacity is not None:
             attrs += f' opacity="{opacity}"'
+        if stroke:
+            attrs += f' stroke="{stroke}" stroke-width="{stroke_width}"'
+            if dash:
+                attrs += f' stroke-dasharray="{dash}"'
         self.ops.append(f'<rect {attrs} fill="{fill}"/>')
 
     def line(self, x1, y1, x2, y2, stroke, width=1, dash=None, opacity=None):
@@ -177,7 +276,8 @@ class Svg:
             attrs += f' opacity="{opacity}"'
         self.ops.append(f'<line {attrs} stroke="{stroke}" stroke-width="{width}"/>')
 
-    def path(self, d, fill='none', stroke=None, width=2, opacity=None, dash=None):
+    def path(self, d, fill='none', stroke=None, width=2, opacity=None, dash=None,
+             marker_end=None):
         attrs = f'd="{d}" fill="{fill}"'
         if stroke:
             attrs += (f' stroke="{stroke}" stroke-width="{width}"'
@@ -186,6 +286,8 @@ class Svg:
             attrs += f' opacity="{opacity}"'
         if dash:
             attrs += f' stroke-dasharray="{dash}"'
+        if marker_end:
+            attrs += f' marker-end="url(#{marker_end})"'
         self.ops.append(f'<path {attrs}/>')
 
     def polyline(self, points, stroke, width=2.5, opacity=None, dash=None):
@@ -211,8 +313,10 @@ class Svg:
     def text(self, x, y, s, size=14, fill=None, weight='normal', anchor='start',
              baseline='auto', opacity=None):
         """一段文本。`anchor`: start/middle/end；`baseline`: auto/middle/hanging。"""
-        attrs = (f'x="{x:.2f}" y="{y:.2f}" font-family="{FONT_STACK}" font-size="{size}"'
-                 f' text-anchor="{anchor}" dominant-baseline="{baseline}"')
+        font = self.t.get('body_font') or FONT_STACK
+        attrs = (f'x="{x:.2f}" y="{y:.2f}" font-family="{esc(font)}" font-size="{size}"'
+                 f' text-anchor="{anchor}" dominant-baseline="{baseline}"'
+                 f' style="font-variant-numeric:tabular-nums"')
         if weight != 'normal':
             attrs += f' font-weight="{weight}"'
         if opacity is not None:
@@ -227,13 +331,21 @@ class Svg:
             self.text(x, y + i * step, line, size=size, fill=fill, weight=weight, anchor=anchor)
         return y + len(lines) * step
 
-    def save(self, path):
-        """写出 SVG，返回字节数。目录不存在则创建。"""
+    def raw(self, xml):
+        """原样追加一段标记（`<defs>`/`<marker>` 这类无法用图元拼出的片段）。"""
+        self.ops.append(xml)
+
+    def document(self):
+        """拼出完整 SVG 文档字符串（不落盘）。"""
         head = (f'<svg xmlns="http://www.w3.org/2000/svg" width="{self.w}" height="{self.h}"'
                 f' viewBox="0 0 {self.w} {self.h}" role="img">')
         background = (f'<rect x="0" y="0" width="{self.w}" height="{self.h}"'
                       f' fill="{self.t["bg"]}"/>')
-        doc = '\n'.join([head, background, *self.ops, '</svg>', ''])
+        return '\n'.join([head, background, *self.ops, '</svg>', ''])
+
+    def save(self, path):
+        """写出 SVG，返回字节数。目录不存在则创建。"""
+        doc = self.document()
         parent = os.path.dirname(os.path.abspath(path))
         os.makedirs(parent, exist_ok=True)
         with open(path, 'w', encoding='utf-8') as handle:

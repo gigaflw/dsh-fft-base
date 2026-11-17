@@ -1,0 +1,211 @@
+{
+ "width": 1200,
+ "height": 700,
+ "title": "规模前 12 只 ETF（自编样本）",
+ "chart": {
+  "type": "table",
+  "top": 12,
+  "row_height": 32,
+  "font_size": 13,
+  "columns": [
+   {
+    "col": "rank",
+    "label": "名次",
+    "weight": 0.5,
+    "align": "right"
+   },
+   {
+    "col": "name",
+    "label": "名称",
+    "weight": 1.2
+   },
+   {
+    "col": "price",
+    "label": "最新价",
+    "weight": 0.8,
+    "align": "right",
+    "dec": 3
+   },
+   {
+    "col": "scale",
+    "label": "规模(元)",
+    "weight": 1.1,
+    "align": "right",
+    "fmt": "compact",
+    "dec": 0
+   },
+   {
+    "col": "trend",
+    "label": "近 5 日",
+    "type": "sparkline",
+    "weight": 1.0
+   }
+  ]
+ },
+ "legend": "规模为最新披露口径",
+ "notes": [
+  "**合计规模 1.8 万亿，前三家占比 6 成",
+  "*口径：自编样本，非真实披露"
+ ],
+ "sources": [
+  "ft_v1_fund_etf_list"
+ ],
+ "rows": [
+  {
+   "rank": 1,
+   "name": "沪深300ETF",
+   "price": 4.123,
+   "scale": 38900000000,
+   "trend": [
+    1,
+    2,
+    1.5,
+    3,
+    2.2
+   ]
+  },
+  {
+   "rank": 2,
+   "name": "中证500ETF",
+   "price": 6.889,
+   "scale": 21100000000,
+   "trend": [
+    3,
+    2.6,
+    2.2,
+    2.4,
+    2.0
+   ]
+  },
+  {
+   "rank": 3,
+   "name": "创业板ETF",
+   "price": 2.314,
+   "scale": 18700000000,
+   "trend": [
+    1.2,
+    1.5,
+    1.4,
+    1.8,
+    2.1
+   ]
+  },
+  {
+   "rank": 4,
+   "name": "科创50ETF",
+   "price": 1.082,
+   "scale": 9600000000,
+   "trend": [
+    2,
+    2.2,
+    1.9,
+    1.7,
+    1.6
+   ]
+  },
+  {
+   "rank": 5,
+   "name": "证券ETF",
+   "price": 1.245,
+   "scale": 7300000000,
+   "trend": [
+    1,
+    0.9,
+    1.1,
+    1.3,
+    1.5
+   ]
+  },
+  {
+   "rank": 6,
+   "name": "酒ETF",
+   "price": 0.918,
+   "scale": 5200000000,
+   "trend": [
+    2.4,
+    2.1,
+    2.0,
+    1.8,
+    1.7
+   ]
+  },
+  {
+   "rank": 7,
+   "name": "光伏ETF",
+   "price": 0.742,
+   "scale": 4800000000,
+   "trend": [
+    1,
+    1.2,
+    1.1,
+    1.4,
+    1.3
+   ]
+  },
+  {
+   "rank": 8,
+   "name": "医药ETF",
+   "price": 0.401,
+   "scale": 4100000000,
+   "trend": [
+    1.6,
+    1.4,
+    1.3,
+    1.1,
+    1.0
+   ]
+  },
+  {
+   "rank": 9,
+   "name": "新能源ETF",
+   "price": 0.655,
+   "scale": 3300000000,
+   "trend": [
+    2,
+    2.3,
+    2.1,
+    2.4,
+    2.6
+   ]
+  },
+  {
+   "rank": 10,
+   "name": "游戏ETF",
+   "price": 1.372,
+   "scale": 2900000000,
+   "trend": [
+    2.2,
+    2.5,
+    2.3,
+    2.1,
+    2.4
+   ]
+  },
+  {
+   "rank": 11,
+   "name": "稀土ETF",
+   "price": 1.518,
+   "scale": 2400000000,
+   "trend": [
+    1.8,
+    2.0,
+    2.2,
+    2.1,
+    2.3
+   ]
+  },
+  {
+   "rank": 12,
+   "name": "黄金ETF",
+   "price": 7.312,
+   "scale": 19000000000,
+   "trend": [
+    3.2,
+    3.1,
+    3.3,
+    3.4,
+    3.2
+   ]
+  }
+ ]
+}

@@ -46,7 +46,8 @@ const PACKAGED_SKILL_RANK = 600
  * `description` frontmatter in SKILL.md.
  */
 const DESCRIPTION = '把 FTShare 接口返回的数据渲染成图，图直接显示在聊天流里（内联 SVG，无需点开侧栏）。'
-  + '用于热榜、板块、资金流、估值、财报、宏观、指数等结果的趋势、排名、分布、对比。'
+  + '用于热榜、板块、资金流、估值、财报、宏观、指数等结果的趋势、排名、分布、对比，'
+  + '也支持热力图、构成图、瀑布图、事件时间轴与产业链示意图。'
   + '当用户说画图/出图/可视化/来张图，或在分析金融数据后需要更直观呈现时使用。'
 
 const CANDIDATE = {
@@ -76,12 +77,13 @@ function installedRuntime() {
     '脚本只用 Python 标准库，**不需要 uv、不需要 venv、不需要 pip 安装**。优先用 `python3`：',
     '',
     '```bash',
-    `python3 ${directory}/scripts/plot.py --spec /绝对路径/spec.json --out /绝对路径/chart.svg`,
+    `python3 ${directory}/scripts/plot.py --spec /绝对路径/spec.json --out-dir "$(pwd)/.dsh/plots" --slug 图名`,
     '```',
     '',
     '若 `python3` 不可用，用 `load_workspace_dependencies` 返回的 `python` 绝对路径替代。',
     '',
-    '**产物路径必须写成绝对路径**，并在回复里用 Markdown 图片语法引用，图才会内联显示。',
+    '**产物路径以 stdout 打印的绝对路径为准**（`--out-dir` 会按内容哈希命名，重复生成同名覆盖），'
+      + '并在回复里用 Markdown 图片语法引用，图才会内联显示。需要色值/字号时先跑 `--tokens`。',
     '',
   ].join('\n')
 }

@@ -1,0 +1,51 @@
+{
+ "width": 1200,
+ "height": 620,
+ "title": "近两月政策与数据事件",
+ "chart": {
+  "type": "timeline",
+  "x": "date",
+  "label": "event",
+  "sign": "impact",
+  "detail": "detail"
+ },
+ "legend": "红=利多，蓝=利空",
+ "rows": [
+  {
+   "date": "20260715",
+   "event": "降准 0.5 个百分点",
+   "impact": 1,
+   "detail": "释放长期资金约 1 万亿元"
+  },
+  {
+   "date": "20260728",
+   "event": "政治局会议定调",
+   "impact": 1,
+   "detail": "活跃资本市场"
+  },
+  {
+   "date": "20260805",
+   "event": "光伏出口数据回落",
+   "impact": -1,
+   "detail": "当月出口同比转负"
+  },
+  {
+   "date": "20260812",
+   "event": "机器人产业大会",
+   "impact": 1,
+   "detail": "产业链订单催化"
+  },
+  {
+   "date": "20260820",
+   "event": "美联储纪要偏鹰",
+   "impact": -1,
+   "detail": "降息预期降温"
+  },
+  {
+   "date": "20260901",
+   "event": "制造业 PMI 回升",
+   "impact": 1,
+   "detail": "回到荣枯线上方"
+  }
+ ]
+}

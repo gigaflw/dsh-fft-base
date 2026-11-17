@@ -16,9 +16,11 @@
 """
 import re
 import sys
+import xml.etree.ElementTree as ET
 
 REQUIRED = ('xmlns', 'width', 'height', 'viewBox')
 EXPECT_XMLNS = 'http://www.w3.org/2000/svg'
+SIZE_WARN_BYTES = 200 * 1024
 
 
 def root_tag(src):
@@ -32,16 +34,17 @@ def attr(tag, name):
 
 
 def check(path):
-    """返回 (ok, [问题描述])"""
-    problems = []
+    """返回 (ok, [问题描述], [告警描述])"""
+    problems, warnings = [], []
     try:
-        src = open(path, encoding='utf-8').read()
+        with open(path, encoding='utf-8') as handle:
+            src = handle.read()
     except OSError as e:
-        return False, [f'读不到文件：{e}']
+        return False, [f'读不到文件：{e}'], []
 
     tag = root_tag(src)
     if tag is None:
-        return False, ['找不到 <svg> 根元素（文件可能不是 SVG，或为空）']
+        return False, ['找不到 <svg> 根元素（文件可能不是 SVG，或为空）'], []
 
     for name in REQUIRED:
         val = attr(tag, name)
@@ -69,13 +72,35 @@ def check(path):
         except ValueError:
             problems.append(f'viewBox 无法解析："{vb}"')
 
+    # 整份文件必须是合法 XML：控制字符、未闭合标签都只能靠解析抓，
+    # 浏览器打开时可能只是渲染异常，不会报错。
+    try:
+        ET.fromstring(src)
+    except ET.ParseError as exc:
+        problems.append(f'不是合法 XML：{exc}')
+
+    # 非有限坐标会让路径直接消失（NaN/Infinity 不是合法 SVG 数值）。
+    if re.search(r'(?i)(?<![\w-])(nan|infinity|inf)(?![\w-])', src):
+        problems.append('含 NaN/Infinity 或非有限坐标')
+
+    # 脚本与内联事件：自包含图片不允许（离线渲染会静默失败，也有注入风险）。
+    if re.search(r'<script\b', src, re.I):
+        problems.append('含 <script>')
+    if re.search(r'\son[a-z]+\s*=', src, re.I):
+        problems.append('含内联事件属性（on*）')
+    if re.search(r'<foreignObject\b', src, re.I):
+        problems.append('含 <foreignObject>（独立图片里不可靠）')
+
     body = src[len(tag):] if tag else src
     ext = [u for u in re.findall(r'(?:href|src|xlink:href)\s*=\s*"(?!#)([^"]+)"', body)
            if u.startswith(('http://', 'https://', '//'))]
     if ext:
         problems.append(f'含外部引用（离线会加载失败）：{ext[:3]}')
 
-    return (not problems), problems
+    if len(src.encode('utf-8')) > SIZE_WARN_BYTES:
+        warnings.append(f'体积 {len(src.encode("utf-8")) / 1024:.0f}KB 偏大（> {SIZE_WARN_BYTES // 1024}KB）')
+
+    return (not problems), problems, warnings
 
 
 def main(argv):
@@ -87,15 +112,17 @@ def main(argv):
 
     failed = 0
     for f in files:
-        ok, problems = check(f)
+        ok, problems, warnings = check(f)
         if ok:
             if not quiet:
                 print(f'  OK   {f}')
+                for warning in warnings:
+                    print(f'       ~ {warning}')
         else:
             failed += 1
             print(f'  FAIL {f}')
-            for p in problems:
-                print(f'       - {p}')
+            for problem in problems:
+                print(f'       - {problem}')
     print(f'\n{"PASS" if not failed else "FAIL"} ({len(files)-failed}/{len(files)})')
     return 0 if not failed else 1
 

@@ -1,0 +1,14 @@
+{
+ "width": 100,
+ "chart": {
+  "type": "barh",
+  "label": "n",
+  "value": "v"
+ },
+ "rows": [
+  {
+   "n": "甲",
+   "v": 1
+  }
+ ]
+}

@@ -12,26 +12,44 @@
 _REQUIRED = (
     'bg', 'card', 'ink', 'mute', 'line',
     'up', 'down', 'neutral', 'accent', 'band',
-    'title_font',
+    'series', 'title_font',
 )
+
+#: 分类序列色。多序列图没给 color 时按顺序取，避免各条线默认挤成同一个颜色。
+SERIES_FALLBACK = ('#1F5FA8', '#C98A00', '#2F7F73', '#7B5EA7', '#B5563F', '#5F6B73')
 
 THEMES = {
     # 米白纸底 + 朱红/墨蓝：默认。像财经杂志内页，截图与打印都清楚。
     'paper': dict(
         bg='#FBF9F4', card='#FFFFFF', ink='#1B1B1F', mute='#6F6B66', line='#E2DCD0',
         up='#D93A3A', down='#1F5FA8', neutral='#A9A39A', accent='#C98A00', band='#1F5FA8',
+        series=('#1F5FA8', '#C98A00', '#2F7F73', '#7B5EA7', '#B5563F', '#5F6B73'),
+    ),
+    # 米白底 + A 股惯例：红涨绿跌。K 线类图（或给国内读者看的涨跌排名）用这套。
+    'ashare': dict(
+        bg='#FBF9F4', card='#FFFFFF', ink='#1B1B1F', mute='#6F6B66', line='#E2DCD0',
+        up='#D93A3A', down='#14805E', neutral='#A9A39A', accent='#C98A00', band='#1F5FA8',
+        series=('#D93A3A', '#14805E', '#C98A00', '#1F5FA8', '#7B5EA7', '#5F6B73'),
     ),
     # 纯白 + 单一亮橙：极简，字更大，适合只看结论的场合。
     'poster': dict(
         bg='#FFFFFF', card='#F7F7F7', ink='#111111', mute='#7A7A7A', line='#E6E6E6',
         up='#FF5A1F', down='#111111', neutral='#C8C8C8', accent='#FF5A1F', band='#FF5A1F',
+        series=('#FF5A1F', '#111111', '#2F7F73', '#7B5EA7', '#C9A227', '#5F6B73'),
     ),
     # 冷灰底 + 青红：数据密度高的图更耐看。
     'slate': dict(
         bg='#F7F8FA', card='#FFFFFF', ink='#16181D', mute='#6B7280', line='#E1E4EA',
         up='#E5484D', down='#0A7EA4', neutral='#9AA1AE', accent='#B7791F', band='#0A7EA4',
+        series=('#2563EB', '#0D9488', '#D97706', '#7C3AED', '#E11D48', '#4F46E5'),
     ),
 }
+
+
+def series_color(theme, index):
+    """取第 index 个分类色，循环使用；主题没配时退回内置分类色。"""
+    palette = theme.get('series') or SERIES_FALLBACK
+    return palette[index % len(palette)]
 
 
 def load(name='paper'):

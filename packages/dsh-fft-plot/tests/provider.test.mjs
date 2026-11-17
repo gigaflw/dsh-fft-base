@@ -37,7 +37,7 @@ test('resourceBase points at the bundled skill directory', () => {
   assert.ok(RESOURCE_BASE.path.endsWith('/skills/dsh-fft-plot'))
   // Both files the skill needs at runtime have to travel with the package.
   assert.ok(readFileSync(join(RESOURCE_BASE.path, 'SKILL.md'), 'utf8').includes('# dsh-fft-plot'))
-  assert.ok(readFileSync(join(RESOURCE_BASE.path, 'scripts/plot.py'), 'utf8').includes('def main()'))
+  assert.ok(readFileSync(join(RESOURCE_BASE.path, 'scripts/plot.py'), 'utf8').includes('def main('))
 })
 
 test('frontmatter is stripped and the runtime note names no external toolchain', async () => {

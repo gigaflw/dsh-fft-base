@@ -1,0 +1,60 @@
+{
+ "width": 1000,
+ "height": 600,
+ "title": "板块涨跌幅（自编样本）",
+ "chart": {
+  "type": "barh",
+  "label": "name",
+  "value": "chg",
+  "sign": "chg",
+  "rank": "rank",
+  "fmt": "pct",
+  "dec": 1
+ },
+ "legend": "红=上涨，蓝=下跌；条形以 0 为基线向两侧展开",
+ "notes": [
+  "**医药与银行领跌"
+ ],
+ "rows": [
+  {
+   "name": "银行",
+   "chg": -3.4,
+   "rank": 1
+  },
+  {
+   "name": "非银",
+   "chg": 2.1,
+   "rank": 2
+  },
+  {
+   "name": "电子",
+   "chg": -1.2,
+   "rank": 3
+  },
+  {
+   "name": "计算机",
+   "chg": 4.5,
+   "rank": 4
+  },
+  {
+   "name": "新能源",
+   "chg": -0.4,
+   "rank": 5
+  },
+  {
+   "name": "医药",
+   "chg": -5.2,
+   "rank": 6
+  },
+  {
+   "name": "消费",
+   "chg": 1.1,
+   "rank": 7
+  },
+  {
+   "name": "军工",
+   "chg": 0.0,
+   "rank": 8
+  }
+ ]
+}

@@ -1,0 +1,76 @@
+{
+ "width": 1200,
+ "height": 700,
+ "title": "板块市值构成（自编样本）",
+ "chart": {
+  "type": "treemap",
+  "label": "name",
+  "value": "mktcap",
+  "group": "sector",
+  "fmt": "num",
+  "dec": 0
+ },
+ "legend": "面积=市值（亿元）；颜色=一级行业",
+ "rows": [
+  {
+   "name": "招商银行",
+   "mktcap": 9800,
+   "sector": "银行"
+  },
+  {
+   "name": "工商银行",
+   "mktcap": 21000,
+   "sector": "银行"
+  },
+  {
+   "name": "东方财富",
+   "mktcap": 6400,
+   "sector": "非银"
+  },
+  {
+   "name": "中信证券",
+   "mktcap": 4200,
+   "sector": "非银"
+  },
+  {
+   "name": "宁德时代",
+   "mktcap": 11500,
+   "sector": "新能源"
+  },
+  {
+   "name": "隆基绿能",
+   "mktcap": 1900,
+   "sector": "新能源"
+  },
+  {
+   "name": "中芯国际",
+   "mktcap": 7800,
+   "sector": "电子"
+  },
+  {
+   "name": "海康威视",
+   "mktcap": 3100,
+   "sector": "电子"
+  },
+  {
+   "name": "恒瑞医药",
+   "mktcap": 3800,
+   "sector": "医药"
+  },
+  {
+   "name": "片仔癀",
+   "mktcap": 1600,
+   "sector": "医药"
+  },
+  {
+   "name": "贵州茅台",
+   "mktcap": 22000,
+   "sector": "消费"
+  },
+  {
+   "name": "美的集团",
+   "mktcap": 5200,
+   "sector": "消费"
+  }
+ ]
+}

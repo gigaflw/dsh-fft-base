@@ -1,0 +1,19 @@
+{
+ "chart": {
+  "type": "chain",
+  "layers": [
+   {
+    "nodes": [
+     "A",
+     "B"
+    ]
+   }
+  ],
+  "edges": [
+   [
+    "A",
+    "C"
+   ]
+  ]
+ }
+}

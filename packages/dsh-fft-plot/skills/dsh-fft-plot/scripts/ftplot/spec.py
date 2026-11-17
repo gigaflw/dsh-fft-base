@@ -38,7 +38,8 @@ def rows_of(spec):
 
     ref = spec.get('data')
     if ref is None:
-        raise SpecError('spec needs either "rows" (inline array) or "data" (file path)')
+        # 示意图（chain）这类图型不消费数据行；是否需要数据由 charts.render 判断。
+        return []
     path = ref if os.path.isabs(ref) else os.path.join(spec.get('_dir', '.'), ref)
     if not os.path.exists(path):
         raise SpecError(f'data file not found: {path}')
